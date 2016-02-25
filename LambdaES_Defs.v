@@ -1,24 +1,24 @@
 (***************************************************************************
-* Formalization of ES calculi						   *		
+* Formalizing SN for lambda_ex						   *		
 *									   *
 * Definitions of explicit substitutions 				   *
 * Brian Aydemir & Arthur Chargueraud, July 2007              	   	   *
 * Fabien Renaud, 2011							   *
-* Flávio L. C. de Moura, 2015                                              *
+* Flávio L. C. de Moura, 2016                                              *
 ***************************************************************************)
 
 Set Implicit Arguments.
 Require Import Metatheory.
 
-(** Grammar of pre-terms. *)
+(** Pre-terms are expressions arbitrarily built from the following constructors: *)
 Inductive pterm : Set :=
   | pterm_bvar : nat -> pterm
   | pterm_fvar : var -> pterm
   | pterm_app  : pterm -> pterm -> pterm
   | pterm_abs  : pterm -> pterm
   | pterm_sub : pterm -> pterm -> pterm 
-  | pterm_sub' : pterm -> pterm -> pterm  (* labeled explicit substitutions *)
-.
+  | pterm_sub' : pterm -> pterm -> pterm.
+(** Bound and free variables have different constructors. In fact, [pterm_bvar] will be used to represent bound variables that are codified by deBruijn indexes. Free variables are represented with names, so the free variable x will be denoted by [pterm_fvar x]. The constructor [pterm_app] and [pterm_abs] are used respectively for representing applications and abstractions. Explicit substitutions appear in two flavors: with or without marks. Therefore, [pterm_sub t u] represents the term [t] with an explicit substitution [u], while [pterm_sub' t u] means that the explicit substitution is marked. The adopted notations for explicit substitutions are as follows: *)
 
 Notation "t [ u ]" := (pterm_sub t u) (at level 70).
 Notation "t [[ u ]]" := (pterm_sub' t u) (at level 70).
@@ -127,4 +127,53 @@ Fixpoint subst (z : var) (u : pterm) (t : pterm) : pterm :=
   | pterm_sub' t1 t2 => pterm_sub' (subst z u t1) (subst z u t2)
   end.
 Notation "[ z ~> u ] t" := (subst z u t) (at level 62).
+
+(** ES terms are expressions without dangling deBruijn indexes. *)
+Inductive term : pterm -> Prop :=
+  | term_var : forall x,
+      term (pterm_fvar x)
+  | term_app : forall t1 t2,
+      term t1 -> 
+      term t2 -> 
+      term (pterm_app t1 t2)
+  | term_abs : forall L t1,
+      (forall x, x \notin L -> term (t1 ^ x)) ->
+      term (pterm_abs t1)
+  | term_sub : forall L t1 t2,
+     (forall x, x \notin L -> term (t1 ^ x)) ->
+      term t2 -> 
+      term (pterm_sub t1 t2).
+
+Lemma term_size_non_null : forall t, term t -> pterm_size t > 0.
+Proof.
+  intros t Ht. destruct t.
+  simpl; auto.  
+  simpl; auto.  
+  simpl. omega.
+  simpl. omega.
+  simpl. omega.
+  simpl. omega.
+Qed.  
+
+(** Body *) 
+Definition body t := exists L, forall x, x \notin L -> term (t ^ x).
+
+Hint Constructors term.
+
+(** Pure lambda terms. *)
+Inductive Lterm : pterm -> Prop :=
+  | Lterm_var : forall x,
+      Lterm (pterm_fvar x)
+  | Lterm_app : forall t1 t2,
+      Lterm t1 -> 
+      Lterm t2 -> 
+      Lterm (pterm_app t1 t2)
+  | Lterm_abs : forall L t1,
+      (forall x, x \notin L -> Lterm (t1 ^ x)) ->
+      Lterm (pterm_abs t1).
+
+(** Body for pure lambda terms *) 
+Definition Lbody t := exists L, forall x, x \notin L -> Lterm (t ^ x).
+
+Hint Constructors Lterm.
 

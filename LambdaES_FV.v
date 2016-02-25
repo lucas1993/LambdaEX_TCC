@@ -1,10 +1,10 @@
 (***************************************************************************
-* Formalization of ES calculi						   *		
+* Formalization of SN for the lambda_ex calculus			   *		
 *									   *
 * Properties of free variables 		 				   *
 *									   *
 * Fabien Renaud, 2011							   *
-* Flávio L. C. de Moura, 2015                                              * 
+* Flávio L. C. de Moura, 2016                                              * 
 ***************************************************************************)
 
 Set Implicit Arguments.

@@ -1,6 +1,5 @@
 (*********************************************************************************
-* Formalization of lambda ex						         *		
-*									         *
+* Formalization of SN for the lambda_ex calculus			         *										         *
 * Brian Aydemir & Arthur Chargueraud, July 2007              	   	         *
 * Flavio L. C. de Moura & Daniel L. Ventura, 2012                                *
 * Flavio L. C. de Moura & Daniel L. Ventura, 2012 & Washington R. Segundo, 2013	 *
@@ -11,7 +10,7 @@ Require Import Metatheory LambdaES_Defs LambdaES_Infra LambdaES_FV.
 Require Import Rewriting_Defs Rewriting_Lib.
 Require Import Lambda Equation_C.
 
-(** Lambda ex calculus *)
+(** Lambda_ex calculus *)
 Inductive rule_b : pterm -> pterm -> Prop :=
    reg_rule_b : forall (t u:pterm),  body t -> term u ->  
      rule_b (pterm_app(pterm_abs t) u) (t[u]).
@@ -19,20 +18,15 @@ Notation "t ->_B u" := (rule_b t u) (at level 66).
 
 Inductive sys_x : pterm -> pterm -> Prop :=
 | reg_rule_var : forall t, term t -> sys_x (pterm_bvar 0 [t]) t
-
 | reg_rule_gc : forall t u, term t -> term u -> sys_x (t[u]) t
-
 | reg_rule_app : forall t1 t2 u, body t1 -> body t2 -> term u -> 
   sys_x ((pterm_app t1 t2)[u]) (pterm_app (t1[u]) (t2[u]))
-
 | reg_rule_lamb : forall t u, body (pterm_abs t) -> term u -> 
   sys_x ((pterm_abs t)[u]) (pterm_abs ((& t)[u]))
-
 | reg_rule_comp : forall t u v, body (t[u]) -> ~ term u -> term v -> 
   sys_x (t[u][v]) (((& t)[v])[ u[ v ] ]).
 
 Notation "t ->_x u" := (sys_x t u) (at level 59, left associativity).
-
 
 Definition ex t u := red_ctx_mod_eqC sys_x t u.
 Notation "t -->ex u" := (ex t u) (at level 66).

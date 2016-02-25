@@ -139,6 +139,26 @@ Proof.
  apply lc_at_open; trivial.
 Qed.
 
+Lemma ex_compat : forall k u t t', (t -->ex t') -> ((open_rec k u t) -->ex (open_rec k u t')).
+Proof.
+  intros k u t t' H.
+  generalize dependent u.
+  generalize dependent k.
+  induction H.
+  destruct H. destruct H. destruct H0.
+  rewrite <- H in H0.
+  (* flavio: tbd *)
+  
+Lemma ex_compat_prop : forall x t t' u, ((t ^ x) -->ex (t' ^ x)) -> ((t ^^ u) -->ex (t' ^^ u)).
+Proof.
+  intros x t t' u H.
+  case H. clear H.
+  intros t0 H.
+  destruct H. destruct H. destruct H0.
+  exists ((close t0 x) ^^ u) ((close t' x) ^^ u). split.
+
+  
+  
 Lemma ex_basic_prop3 : forall t t' u L, term u -> 
                        (forall x, x \notin L -> (t ^ x) -->ex (t' ^ x)) ->    
                        ((t ^^ u) -->ex (t' ^^ u)).
@@ -209,6 +229,56 @@ Proof.
  rewrite <- (open_close_var x). reflexivity. apply H3. 
 Qed.
 
+(** flavio: tests 2016/02/16 *)
+Lemma ex_basic_trivial1 : forall x, SN ex (pterm_fvar x).
+Proof.
+  intro x.
+  exists 0.
+  apply NF_to_SN0.
+  unfold NF.
+  intro t'. intro H.
+  inversion H.
+  destruct H0. destruct H0. 
+  apply eqC_fvar_term in H0. subst.
+  destruct H1.
+  inversion H0.
+  inversion H2.  
+Qed.  
+
+Lemma ex_basic_trivial2 : forall n, SN ex (pterm_bvar n).
+Proof.
+  intro n.
+  exists 0.
+  apply NF_to_SN0.
+  unfold NF.
+  intro t'. intro H.
+  inversion H.
+  destruct H0. destruct H0. 
+  apply eqC_bvar_term in H0. subst.
+  destruct H1.
+  inversion H0.
+  inversion H2.  
+Qed.  
+
+
+Lemma ex_basic_prop4_test : forall t u, SN ex (t ^^ u) -> SN ex t.
+Proof.
+  intros t u H.
+  unfold SN in H.
+  destruct H.
+  exists x.
+  induction x.
+  apply NF_to_SN0.
+  apply SN0_to_NF in H.
+  unfold NF in *.
+  intro t'. intro H'.
+  pick_fresh x.
+  gen_eq t0 : (close t' x).
+  intro H0.
+  assert ((t ^^ u) -->ex (t0 ^^ u)).
+  apply ex_basic_prop3 with (L := (fv t) \u (fv t0)).
+  
+  
 Lemma ex_basic_prop4 : forall x t u, SN ex (t ^^ u) -> 
                                      term u -> (x \notin fv t) -> 
                                      SN ex (t ^ x).
