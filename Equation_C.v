@@ -42,7 +42,50 @@ Proof.
 Qed.
  *)
 
-Definition eqC (t : pterm) (u : pterm) := star_closure (ES_contextual_closure eqc) t u.
+Definition eqc_ctx (t u: pterm) := ES_contextual_closure eqc t u.
+Notation "t =c u" := (eqc_ctx t u) (at level 66). 
+
+Definition eqc_trans (t u: pterm) := trans_closure eqc_ctx t u.
+Notation "t =c+ u" := (eqc_trans t u) (at level 66). 
+
+(** Compatibility of =c+ with the structure of terms. *)
+
+Lemma eqc_trans_app_l: forall t t' u, t =c+ t' -> (pterm_app t u) =c+ (pterm_app t' u).
+Proof.
+  intros t t' u H.
+  induction H.
+  apply one_step_reduction.
+  apply ES_app_left; assumption.
+  apply transitive_reduction with (pterm_app u0 u).
+  apply ES_app_left; assumption. assumption.
+Qed.  
+
+Lemma eqc_trans_app_r: forall t u u', u =c+ u' -> (pterm_app t u) =c+ (pterm_app t u').
+Proof.
+  intros t u u' H.
+  induction H.
+  apply one_step_reduction.
+  apply ES_app_right; assumption.
+  apply transitive_reduction with (pterm_app t u).
+  apply ES_app_right; assumption. assumption.
+Qed.  
+
+Lemma eqc_trans_abs: forall t t' x, exists L, x \notin L -> t^x =c+ t'^x -> (pterm_abs t) =c+ (pterm_abs t').
+Proof.
+  intros t t' x.
+  exists (fv t).
+  intros H0 H1.
+  induction H1.
+  apply one_step_reduction.
+  apply ES_abs_in with (fv t).
+  intros x' H2.
+  assumption.
+  apply transitive_reduction with (pterm_app u0 u).
+  apply ES_app_left; assumption. assumption.
+Qed.  
+
+  
+Definition eqC (t : pterm) (u : pterm) := star_closure eqc_ctx t u.
 Notation "t =e u" := (eqC t u) (at level 66). 
 
 (** =e is an equivalence relation *)
@@ -95,6 +138,27 @@ Proof.
  apply eqC_trans with y; trivial.
 Qed.
 
+(** Compatibility of =e with the structure of pre-terms. *)
+
+Lemma pterm_app_r: forall t t' u,  t =e t' -> (pterm_app t u) =e (pterm_app t' u).
+Proof.
+  intros t t' u H.
+  induction H. reflexivity.
+
+  inversion H.
+  unfold eqC.
+  apply star_trans_reduction.
+  apply one_step_reduction.
+  apply ES_app_left; assumption.
+  unfold eqC.
+  apply star_trans_reduction.
+  apply transitive_reduction with (pterm_app u1 u).
+  apply ES_app_left; assumption.
+  inversion H1.
+  apply one_step_reduction.
+  apply ES_app_left; assumption.
+
+  
 (*** =e inversion *)
 
 (*
@@ -291,11 +355,11 @@ Proof.
     intros. generalize dependent n.
     induction H; intros. apply lc_at_eqc; auto.
 
-    split; intro. 
+    split; intro H1. 
     inversion H1; subst. constructor. rewrite <- IHES_contextual_closure. auto. auto.
     inversion H1; subst. constructor. rewrite IHES_contextual_closure. auto. auto.
 
-    split; intro. 
+    split; intro H1. 
     inversion H1; subst. constructor. auto. rewrite <- IHES_contextual_closure. auto. 
     inversion H1; subst. constructor. auto. rewrite IHES_contextual_closure. auto. 
 
@@ -306,20 +370,23 @@ Proof.
     intuition eauto.  intuition eauto.  apply neq_0_lt.  trivial.
     intuition eauto.  apply neq_0_lt.  trivial.
 
-    split; simpl; intros. simpl in *. case var_fresh with (L := L). intros. 
-    split; destruct H2; auto.
+    split; simpl; intros H1. simpl in *. case var_fresh with (L := L).
+    intros x H2. 
+    split; destruct H1; auto.
     rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0); auto. 
     unfold open in *. rewrite <- H0.
-    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto. apply neq_0_lt. trivial. auto. apply neq_0_lt. trivial. auto. 
+    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto.
+    apply neq_0_lt. trivial. auto. apply neq_0_lt. trivial. auto. 
 
-    simpl in *. case var_fresh with (L := L). intros. 
-    split; destruct H2; auto.
+    simpl in *. case var_fresh with (L := L). intros x H2. 
+    split; destruct H1; auto.
     rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0); auto. 
     unfold open in *. rewrite H0.
-    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto. apply neq_0_lt. trivial. auto. apply neq_0_lt. trivial.
+    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto.
+    apply neq_0_lt. trivial. auto. apply neq_0_lt. trivial.
 
     simpl.
-    split; intros; split; destruct H1; auto. rewrite <- IHES_contextual_closure; auto.
+    split; intros H1; split; destruct H1; auto. rewrite <- IHES_contextual_closure; auto.
     rewrite IHES_contextual_closure; auto.
 Qed.
 
@@ -343,13 +410,13 @@ Qed.
 
 Lemma ES_eqc_fv : forall x t t', (ES_contextual_closure eqc) t t' -> ((x \in fv t) <-> (x \in fv t')).
 Proof.
-    intros.
+    intros x t t' H.
     induction H. apply eqc_fv; auto.
     simpl. 
-    split; intros. apply in_union. rewrite <- IHES_contextual_closure; auto. apply in_union; auto.
+    split; intros H1. apply in_union. rewrite <- IHES_contextual_closure; auto. apply in_union; auto.
     apply in_union. rewrite IHES_contextual_closure; auto. apply in_union; auto.
     simpl.
-    split; intros. apply in_union. rewrite <- IHES_contextual_closure; auto. apply in_union; auto.
+    split; intros H1. apply in_union. rewrite <- IHES_contextual_closure; auto. apply in_union; auto.
     apply in_union. rewrite IHES_contextual_closure; auto. apply in_union; auto.
     simpl.
     pick_fresh y.
@@ -361,23 +428,22 @@ Proof.
 
     simpl.
     pick_fresh y.
-        apply notin_union in Fr. destruct Fr. apply notin_union in H2. destruct H2.
-        apply notin_union in H2. destruct H2. apply notin_union in H2. destruct H2. apply notin_singleton in H6. 
+        apply notin_union in Fr. destruct Fr. apply notin_union in H1. destruct H1.
+        apply notin_union in H1. destruct H1. apply notin_union in H1. destruct H1.
+        apply notin_singleton in H5. 
         assert (Q: (x \in fv (t ^ y) <-> x \in fv t)).  apply fv_open_. intuition eauto.
         assert (S: (x \in fv (t' ^ y) <-> x \in fv t')).  apply fv_open_. intuition eauto.
-    split; intros. apply in_union in H7; destruct H7. apply in_union.
-    left. rewrite <- Q in H7. rewrite <- S. rewrite <- H0. auto. auto.
+    split; intros H6. apply in_union in H6; destruct H6. apply in_union.
+    left. rewrite <- Q in H6. rewrite <- S. rewrite <- H0. auto. auto.
     apply in_union. right; auto.
-    intros. apply in_union in H7; destruct H7. apply in_union.
-    left. rewrite <- S in H7. rewrite <- Q. rewrite H0. auto. auto.
+    apply in_union in H6; destruct H6. apply in_union.
+    left. rewrite <- S in H6. rewrite <- Q. rewrite H0. auto. auto.
     apply in_union. right; auto.
-
 
     simpl.
-    split; intros; apply in_union in H1; destruct H1; apply in_union.
+    split; intros H1; apply in_union in H1; destruct H1; apply in_union.
     left; auto. right; rewrite <- IHES_contextual_closure; auto.
     left; auto. right; rewrite IHES_contextual_closure; auto.
-
 Qed.
 
 Lemma eqC_fv : forall x t t', t =e t' -> ((x \in fv t) <-> (x \in fv t')).
@@ -736,7 +802,6 @@ Proof. (* Lucas *)
     destruct H4. destruct H4.  destruct H4. destruct H5.
     exists x3 x4. split; auto. split; auto. rewrite H6; auto.
 
-
     intro H'.
     inversion H'; subst.
     apply one_step_reduction.
@@ -782,7 +847,9 @@ Qed.
 
 Instance rw_eqC_app : Proper (eqC ++> eqC ++> eqC) pterm_app.
 Proof. 
- intros_all.
+  intros_all.
+  apply eqC_trans with (pterm_app y x0).
+  
  apply star_closure_composition with (u:=pterm_app y x0).
   induction H. apply reflexive_reduction.
   apply star_transitive_derivation. right.
