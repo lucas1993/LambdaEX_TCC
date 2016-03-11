@@ -268,7 +268,6 @@ Definition red_ctx_mod_eqC (R: pterm -> pterm -> Prop) (t: pterm) (u : pterm) :=
 
 (* ********************************************************************** *)
 (** =e Properties *)
-(*
 Lemma lc_at_eqc : forall n t u, eqc t u  -> (lc_at n t <-> lc_at n u).
 Proof.
  intros n t u H. destruct H; split; simpl; trivial.
@@ -287,41 +286,107 @@ Proof.
  rewrite bswap_rec_id with (n := 0); reflexivity.
 Qed.
 
-Lemma lc_at_pctx_eqc : forall n t u, (p_contextual_closure eqc) t u  -> (lc_at n t <-> lc_at n u).
+Lemma lc_at_ES_ctx_eqc : forall n t u, (ES_contextual_closure eqc) t u  -> (lc_at n t <-> lc_at n u).
 Proof.
- intros n t u H. generalize n; clear n.
- induction H; simpl. intro n. apply lc_at_eqc; trivial.
- split;  intro H1. destruct H1. split. 
- apply IHp_contextual_closure1; trivial.
- apply IHp_contextual_closure2; trivial.
- destruct H1. split. 
- apply IHp_contextual_closure1; trivial.
- apply IHp_contextual_closure2; trivial.
- case var_fresh with (L := L). intros x Fr. intro n.
- assert (Q : forall t, lc_at (S n) (t ^ x) <-> lc_at (S n) t).
-   intro t1. apply lc_at_open'; try omega; trivial.
- split. intro H1. apply Q. apply H0; trivial. apply Q; trivial.
- intro H2. apply Q. apply H0; trivial. apply Q; trivial.
- case var_fresh with (L := L). intros x Fr. intro n.
- assert (Q : forall t, lc_at (S n) (t ^ x) <-> lc_at (S n) t).
-   intro t1. apply lc_at_open'; try omega; trivial.
- split. intro H3. destruct H3. split.
- apply Q. apply H0; trivial. apply Q; trivial. 
- apply IHp_contextual_closure; trivial.
- intro H2. destruct H2. split.
- apply Q. apply H0; trivial. apply Q; trivial. 
- apply IHp_contextual_closure; trivial.
-Qed. 
+    intros. generalize dependent n.
+    induction H; intros. apply lc_at_eqc; auto.
+
+    split; intro. 
+    inversion H1; subst. constructor. rewrite <- IHES_contextual_closure. auto. auto.
+    inversion H1; subst. constructor. rewrite IHES_contextual_closure. auto. auto.
+
+    split; intro. 
+    inversion H1; subst. constructor. auto. rewrite <- IHES_contextual_closure. auto. 
+    inversion H1; subst. constructor. auto. rewrite IHES_contextual_closure. auto. 
+
+    simpl. simpl in *. case var_fresh with (L := L). intros. 
+    rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0). symmetry.
+    rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0). 
+    unfold open in *. symmetry. auto.
+    intuition eauto.  intuition eauto.  apply neq_0_lt.  trivial.
+    intuition eauto.  apply neq_0_lt.  trivial.
+
+    split; simpl; intros. simpl in *. case var_fresh with (L := L). intros. 
+    split; destruct H2; auto.
+    rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0); auto. 
+    unfold open in *. rewrite <- H0.
+    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto. apply neq_0_lt. trivial. auto. apply neq_0_lt. trivial. auto. 
+
+    simpl in *. case var_fresh with (L := L). intros. 
+    split; destruct H2; auto.
+    rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0); auto. 
+    unfold open in *. rewrite H0.
+    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto. apply neq_0_lt. trivial. auto. apply neq_0_lt. trivial.
+
+    simpl.
+    split; intros; split; destruct H1; auto. rewrite <- IHES_contextual_closure; auto.
+    rewrite IHES_contextual_closure; auto.
+Qed.
 
 
 Lemma lc_at_eqC : forall n t t', t =e t' -> (lc_at n t <-> lc_at n t').
 Proof.
  intros n t t' H. generalize n; clear n. 
- induction H. intro n. apply lc_at_pctx_eqc; trivial.
- intro n. apply (lc_at_pctx_eqc n) in H. rewrite H.
- apply IHtrans_closure.
+ induction H. intro; reflexivity.
+ intro n. induction H. apply lc_at_ES_ctx_eqc; auto. 
+ apply (lc_at_ES_ctx_eqc n) in H. rewrite H; auto.
 Qed.
 
+
+Lemma eqc_fv : forall x t t', eqc t t' -> ((x \in fv t) <-> (x \in fv t')).
+Proof.
+ intros x t t' H.  induction H. simpl. unfold bswap. rewrite fv_bswap_rec. 
+ (* ---------- *)
+ admit.
+Qed.
+
+Lemma ES_eqc_fv : forall x t t', (ES_contextual_closure eqc) t t' -> ((x \in fv t) <-> (x \in fv t')).
+Proof.
+    intros.
+    induction H. apply eqc_fv; auto.
+    simpl. 
+    split; intros. apply in_union. rewrite <- IHES_contextual_closure; auto. apply in_union; auto.
+    apply in_union. rewrite IHES_contextual_closure; auto. apply in_union; auto.
+    simpl.
+    split; intros. apply in_union. rewrite <- IHES_contextual_closure; auto. apply in_union; auto.
+    apply in_union. rewrite IHES_contextual_closure; auto. apply in_union; auto.
+    simpl.
+    pick_fresh y.
+        apply notin_union in Fr. destruct Fr. apply notin_union in H1. destruct H1.
+        apply notin_union in H1. destruct H1. apply notin_singleton in H4. 
+        assert (Q: (x \in fv (t ^ y) <-> x \in fv t)).  apply fv_open_. intuition eauto.
+        assert (S: (x \in fv (t' ^ y) <-> x \in fv t')).  apply fv_open_. intuition eauto.
+    rewrite <- S. rewrite <- H0. rewrite Q; auto. auto. reflexivity. auto. 
+
+    simpl.
+    pick_fresh y.
+        apply notin_union in Fr. destruct Fr. apply notin_union in H2. destruct H2.
+        apply notin_union in H2. destruct H2. apply notin_union in H2. destruct H2. apply notin_singleton in H6. 
+        assert (Q: (x \in fv (t ^ y) <-> x \in fv t)).  apply fv_open_. intuition eauto.
+        assert (S: (x \in fv (t' ^ y) <-> x \in fv t')).  apply fv_open_. intuition eauto.
+    split; intros. apply in_union in H7; destruct H7. apply in_union.
+    left. rewrite <- Q in H7. rewrite <- S. rewrite <- H0. auto. auto.
+    apply in_union. right; auto.
+    intros. apply in_union in H7; destruct H7. apply in_union.
+    left. rewrite <- S in H7. rewrite <- Q. rewrite H0. auto. auto.
+    apply in_union. right; auto.
+
+
+    simpl.
+    split; intros; apply in_union in H1; destruct H1; apply in_union.
+    left; auto. right; rewrite <- IHES_contextual_closure; auto.
+    left; auto. right; rewrite IHES_contextual_closure; auto.
+
+Qed.
+
+Lemma eqC_fv : forall x t t', t =e t' -> ((x \in fv t) <-> (x \in fv t')).
+Proof.
+ intros x t t' H.  induction H. reflexivity.
+ induction H. apply ES_eqc_fv; auto.
+ apply (ES_eqc_fv x) in H. rewrite H; auto.
+Qed.
+
+(*
 Lemma red_regular'_eqc : red_regular' eqc.
 Proof.
    unfold red_regular'. intros t0 t1 H'. rewrite term_eq_term'. rewrite term_eq_term'.
@@ -384,14 +449,8 @@ Proof.
  left. apply Q. apply H0; trivial. apply Q'; trivial. 
  right. apply IHp_contextual_closure; trivial.
 Qed.
-
-Lemma eqC_fv : forall x t t', t =e t' -> ((x \in fv t) <-> (x \in fv t')).
-Proof.
- intros x t t' H.  induction H.
- apply pctx_eqc_fv; trivial.
- apply (pctx_eqc_fv x) in H. rewrite H; trivial.
-Qed.
-
+*)
+(*
 Lemma red_regular_eqC : forall R, red_regular R -> 
                         red_regular (red_ctx_mod_eqC R).
 Proof.
@@ -655,28 +714,47 @@ Qed.
 
 Instance rw_eqC_trs : forall R, Proper (eqC ==> eqC ==> iff) (trans_closure (red_ctx_mod_eqC R)).
 Proof. (* Lucas *)
-  intros_all. split. intro H'.
-  apply transitive_reduction with x0.
-  inversion H'; subst.
-  exists x x0.
-  split. apply eqC_sym; assumption.
-  split.  apply transitive_star_derivation'.
- apply transitive_star_derivation' in H'.
- case H'. clear H'. intro H1. left.
- rewrite <- H. rewrite <- H0; trivial.
- clear H'. intro H1. right. destruct H1.
- destruct H1. destruct H2. destruct H2.
- exists x1. split. rewrite <- H; trivial.
- exists x2. split; trivial. rewrite <- H0; trivial.
- intro H'.
- apply transitive_star_derivation'.
- apply transitive_star_derivation' in H'.
- case H'. clear H'. intro H1. left.
- rewrite H. rewrite H0; trivial.
- clear H'. intro H1. right. destruct H1.
- destruct H1. destruct H2. destruct H2.
- exists x1. split. rewrite H; trivial.
- exists x2. split; trivial. rewrite H0; trivial.
+    intros_all. split. 
+    intro H'.
+    inversion H'; subst.
+    apply one_step_reduction.
+    destruct H1. destruct H1.  destruct H1. destruct H2.
+    exists x1 x2.
+    split. rewrite <- H; auto.
+    split; auto. rewrite <- H0; auto.
+    constructor 2 with u. rewrite <- H; auto.
+    apply transitive_star_derivation' in H2.
+    destruct H2.
+    constructor 1.
+    destruct H2. destruct H2.  destruct H2. destruct H3.
+    unfold red_ctx_mod_eqC. exists x1 x2.
+    split; auto. split; auto. rewrite H4; auto.
+    destruct H2. destruct H2. destruct H3. destruct H3.
+    apply transitive_star_derivation'.
+    right. exists x1. split; auto. exists x2. split; auto.
+    destruct H4. destruct H4.  destruct H4. destruct H5.
+    exists x3 x4. split; auto. split; auto. rewrite H6; auto.
+
+
+    intro H'.
+    inversion H'; subst.
+    apply one_step_reduction.
+    destruct H1. destruct H1.  destruct H1. destruct H2.
+    exists x1 x2.
+    split. rewrite H; auto.
+    split; auto. rewrite H0; auto.
+    constructor 2 with u. rewrite H; auto.
+    apply transitive_star_derivation' in H2.
+    destruct H2.
+    constructor 1.
+    destruct H2. destruct H2.  destruct H2. destruct H3.
+    unfold red_ctx_mod_eqC. exists x1 x2.
+    split; auto. split; auto. rewrite H4; auto. symmetry; auto.
+    destruct H2. destruct H2. destruct H3. destruct H3.
+    apply transitive_star_derivation'.
+    right. exists x1. split; auto. exists x2. split; auto.
+    destruct H4. destruct H4.  destruct H4. destruct H5.
+    exists x3 x4. split; auto. split; auto. rewrite H6; auto. symmetry; auto.
 Qed.
 
 Instance rw_eqC_lc_at : forall n, Proper (eqC ==> iff) (lc_at n).
@@ -703,13 +781,16 @@ Qed.
 
 Instance rw_eqC_app : Proper (eqC ++> eqC ++> eqC) pterm_app.
 Proof. 
- intros_all. apply transitive_closure_composition with (u:=pterm_app y x0).
- clear H0. induction H. apply one_step_reduction. apply p_app; trivial.
- apply p_redex. apply eqc_rf. apply transitive_reduction with (u:=pterm_app u x0); trivial.
- apply p_app; trivial. apply p_redex. apply eqc_rf.
- clear H. induction H0. apply one_step_reduction. apply p_app; trivial.
- apply p_redex. apply eqc_rf. apply transitive_reduction with (u:=pterm_app y u); trivial.
- apply p_app; trivial. apply p_redex. apply eqc_rf.
+ intros_all.
+apply star_closure_composition with (u:=pterm_app y x0).
+  induction H. apply reflexive_reduction.
+  apply star_transitive_derivation. right.
+  induction H. constructor. constructor 2. auto.  
+ (*apply p_redex. apply eqc_rf. apply transitive_reduction with (u:=pterm_app u x0); trivial.*)
+ (*apply p_app; trivial. apply p_redex. apply eqc_rf.*)
+ (*clear H. induction H0. apply one_step_reduction. apply p_app; trivial.*)
+ (*apply p_redex. apply eqc_rf. apply transitive_reduction with (u:=pterm_app y u); trivial.*)
+ (*apply p_app; trivial. apply p_redex. apply eqc_rf.*)
 Qed.
 
 Instance rw_eqC_subst_right : forall t, Proper (eqC ++> eqC) (pterm_sub t).
