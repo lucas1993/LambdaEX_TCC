@@ -335,9 +335,10 @@ Qed.
 
 Lemma eqc_fv : forall x t t', eqc t t' -> ((x \in fv t) <-> (x \in fv t')).
 Proof.
- intros x t t' H.  induction H. simpl. unfold bswap. rewrite fv_bswap_rec. 
- (* ---------- *)
- admit.
+  intros x t t' H.  induction H. simpl. unfold bswap. rewrite fv_bswap_rec.
+  rewrite <- union_assoc.
+  rewrite (union_comm (fv u) (fv v)).
+  rewrite union_assoc. reflexivity.
 Qed.
 
 Lemma ES_eqc_fv : forall x t t', (ES_contextual_closure eqc) t t' -> ((x \in fv t) <-> (x \in fv t')).
@@ -782,11 +783,12 @@ Qed.
 Instance rw_eqC_app : Proper (eqC ++> eqC ++> eqC) pterm_app.
 Proof. 
  intros_all.
-apply star_closure_composition with (u:=pterm_app y x0).
+ apply star_closure_composition with (u:=pterm_app y x0).
   induction H. apply reflexive_reduction.
   apply star_transitive_derivation. right.
   induction H. constructor. constructor 2. auto.  
- (*apply p_redex. apply eqc_rf. apply transitive_reduction with (u:=pterm_app u x0); trivial.*)
+  unfold eqC in H0
+  (*apply p_redex. apply eqc_rf. apply transitive_reduction with (u:=pterm_app u x0); trivial.*)
  (*apply p_app; trivial. apply p_redex. apply eqc_rf.*)
  (*clear H. induction H0. apply one_step_reduction. apply p_app; trivial.*)
  (*apply p_redex. apply eqc_rf. apply transitive_reduction with (u:=pterm_app y u); trivial.*)

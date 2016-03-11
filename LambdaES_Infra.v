@@ -2024,79 +2024,79 @@ Qed.
 (** Properties of reduction *)
 
 Definition red_regular (R : pterm -> pterm -> Prop) :=
-  forall t t', R t t' -> term t /\ term t'.
+  forall t t', term t -> R t t' -> term t'.
 
-Definition red_regular' (R : pterm -> pterm -> Prop) :=
-  forall t t', R t t' -> (term t <-> term t').
+(* Definition red_regular' (R : pterm -> pterm -> Prop) := *)
+(*   forall t t', R t t' -> (term t <-> term t'). *)
 
-Definition red_refl (R : pterm -> pterm -> Prop) :=
-  forall t, term t -> R t t.
+(* Definition red_refl (R : pterm -> pterm -> Prop) := *)
+(*   forall t, term t -> R t t. *)
 
-Definition red_in (R : pterm -> pterm -> Prop) :=
-  forall t x u u', term t -> R u u' ->
-  R ([x ~> u]t) ([x ~> u']t).
+(* Definition red_in (R : pterm -> pterm -> Prop) := *)
+(*   forall t x u u', term t -> R u u' -> *)
+(*   R ([x ~> u]t) ([x ~> u']t). *)
  
-Definition red_all (R : pterm -> pterm -> Prop) :=
-  forall x t t', R t t' -> 
-  forall u u', R u u' -> 
-  R ([x~>u]t) ([x~>u']t').
+(* Definition red_all (R : pterm -> pterm -> Prop) := *)
+(*   forall x t t', R t t' ->  *)
+(*   forall u u', R u u' ->  *)
+(*   R ([x~>u]t) ([x~>u']t'). *)
 
-Definition red_out (R : pterm -> pterm -> Prop) :=
-  forall x u t t', term u -> R t t' -> 
-  R ([x~>u]t) ([x~>u]t').
+(* Definition red_out (R : pterm -> pterm -> Prop) := *)
+(*   forall x u t t', term u -> R t t' ->  *)
+(*   R ([x~>u]t) ([x~>u]t'). *)
 
-Definition red_out' (R : pterm -> pterm -> Prop) :=
-  forall x y t t', R t t' -> 
-  R ([x~>pterm_fvar y]t) ([x~>pterm_fvar y]t').
+(* Definition red_out' (R : pterm -> pterm -> Prop) := *)
+(*   forall x y t t', R t t' ->  *)
+(*   R ([x~>pterm_fvar y]t) ([x~>pterm_fvar y]t'). *)
 
-Definition red_rename (R : pterm -> pterm -> Prop) :=
-  forall x t t' y,
-  x \notin (fv t) -> x \notin (fv t') ->
-  R (t ^ x) (t' ^ x) -> 
-  R (t ^ y) (t' ^ y).
+(* Definition red_rename (R : pterm -> pterm -> Prop) := *)
+(*   forall x t t' y, *)
+(*   x \notin (fv t) -> x \notin (fv t') -> *)
+(*   R (t ^ x) (t' ^ x) ->  *)
+(*   R (t ^ y) (t' ^ y). *)
 
-Definition red_rename' (R : pterm -> pterm -> Prop) :=
-  forall x t t' y,
-  x \notin (fv t) -> x \notin (fv t') ->
-  y \notin (fv t) -> y \notin (fv t') ->
-  R (t ^ x) (t' ^ x) -> 
-  R (t ^ y) (t' ^ y).
+(* Definition red_rename' (R : pterm -> pterm -> Prop) := *)
+(*   forall x t t' y, *)
+(*   x \notin (fv t) -> x \notin (fv t') -> *)
+(*   y \notin (fv t) -> y \notin (fv t') -> *)
+(*   R (t ^ x) (t' ^ x) ->  *)
+(*   R (t ^ y) (t' ^ y). *)
 
-Definition red_swap (R : pterm -> pterm -> Prop) :=
-  forall x t t' y,
-  R t t' ->
-  R ([(x,y)]t) ([(x,y)]t').
+(* Definition red_swap (R : pterm -> pterm -> Prop) := *)
+(*   forall x t t' y, *)
+(*   R t t' -> *)
+(*   R ([(x,y)]t) ([(x,y)]t'). *)
 
-Definition red_through (R : pterm -> pterm -> Prop) :=
-  forall x t1 t2 u1 u2, 
-  x \notin (fv t1) -> x \notin (fv u1) ->
-  R (t1 ^ x) (u1 ^ x) -> R t2 u2 ->
-  R (t1 ^^ t2) (u1 ^^ u2).
+(* Definition red_through (R : pterm -> pterm -> Prop) := *)
+(*   forall x t1 t2 u1 u2,  *)
+(*   x \notin (fv t1) -> x \notin (fv u1) -> *)
+(*   R (t1 ^ x) (u1 ^ x) -> R t2 u2 -> *)
+(*   R (t1 ^^ t2) (u1 ^^ u2). *)
 
-Definition red_not_fv (R: pterm -> pterm -> Prop) :=
-  forall x t t', R t t' ->
-  x \notin (fv t) -> x \notin (fv t'). 
+(* Definition red_not_fv (R: pterm -> pterm -> Prop) := *)
+(*   forall x t t', R t t' -> *)
+(*   x \notin (fv t) -> x \notin (fv t').  *)
 
-Definition red_fv (R: pterm -> pterm -> Prop) :=
-  forall x t t', R t t' ->
-  x \in (fv t') -> x \in (fv t). 
+(* Definition red_fv (R: pterm -> pterm -> Prop) := *)
+(*   forall x t t', R t t' -> *)
+(*   x \in (fv t') -> x \in (fv t).  *)
 
-Lemma red_regular_ctx: forall (R : pterm -> pterm -> Prop),
-  red_regular R -> red_regular (ES_contextual_closure R).
- Proof.
-  intros_all. induction H0.
-  apply H; trivial. 
-  case IHES_contextual_closure; clear IHES_contextual_closure.
-  intros H2 H3. split; apply term_distribute_over_application; split ; trivial.
-  case IHES_contextual_closure; clear IHES_contextual_closure.
-  intros H2 H3. split; apply term_distribute_over_application; split ; trivial.
-  split; apply body_to_term_abs; unfold body; exists L;
-  intros; apply H1; trivial.
-  split; apply body_to_subs; trivial; unfold body; exists L; intros; apply H1; trivial.
-  split; apply body_to_subs; apply term_is_a_body in H1.
-  assumption. apply IHES_contextual_closure. 
-  assumption. apply IHES_contextual_closure. 
-Qed.
+(* Lemma red_regular_ctx: forall (R : pterm -> pterm -> Prop), *)
+(*   red_regular R -> red_regular (ES_contextual_closure R). *)
+(*  Proof. *)
+(*   intros_all. induction H0. *)
+(*   apply H; trivial.  *)
+(*   case IHES_contextual_closure; clear IHES_contextual_closure. *)
+(*   intros H2 H3. split; apply term_distribute_over_application; split ; trivial. *)
+(*   case IHES_contextual_closure; clear IHES_contextual_closure. *)
+(*   intros H2 H3. split; apply term_distribute_over_application; split ; trivial. *)
+(*   split; apply body_to_term_abs; unfold body; exists L; *)
+(*   intros; apply H1; trivial. *)
+(*   split; apply body_to_subs; trivial; unfold body; exists L; intros; apply H1; trivial. *)
+(*   split; apply body_to_subs; apply term_is_a_body in H1. *)
+(*   assumption. apply IHES_contextual_closure.  *)
+(*   assumption. apply IHES_contextual_closure.  *)
+(* Qed. *)
 
  (** flavio 2016/02/19
 Lemma SN_app : forall n R t u, red_regular R ->  
@@ -2241,165 +2241,165 @@ Qed.
 
 (** Reduction on lists **)
 
-Definition R_list (R : pterm -> pterm -> Prop) (l : list pterm) (l' : list pterm) := 
-exists t, exists t', exists l0, exists l1, l = (l0 ++ t :: l1) /\ l' = (l0 ++ t' :: l1) /\ R t t'.
+(* Definition R_list (R : pterm -> pterm -> Prop) (l : list pterm) (l' : list pterm) :=  *)
+(* exists t, exists t', exists l0, exists l1, l = (l0 ++ t :: l1) /\ l' = (l0 ++ t' :: l1) /\ R t t'. *)
 
-Lemma R_list_h: forall (R : pterm -> pterm -> Prop) a b lt, 
-                R a b -> R_list R (a :: lt) (b :: lt).   
-Proof.
- intros. unfold R_list. exists a. exists b. exists (nil (A := pterm)). exists lt.
- simpl. split; trivial; split; trivial.
-Qed.
+(* Lemma R_list_h: forall (R : pterm -> pterm -> Prop) a b lt,  *)
+(*                 R a b -> R_list R (a :: lt) (b :: lt).    *)
+(* Proof. *)
+(*  intros. unfold R_list. exists a. exists b. exists (nil (A := pterm)). exists lt. *)
+(*  simpl. split; trivial; split; trivial. *)
+(* Qed. *)
 
-Lemma R_list_t: forall (R : pterm -> pterm -> Prop) a lt lt', 
-                (R_list R lt lt') -> R_list R (a :: lt) (a :: lt').
-Proof.
- unfold R_list. intros.
- case H; clear H. intros b H.
- case H; clear H. intros b' H.
- case H; clear H. intros l H.
- case H; clear H. intros l' H.
- destruct H. destruct H0. 
- rewrite H. rewrite H0.
- exists b. exists b'. 
- exists (a :: l). exists l'. simpl.
- split; trivial. split; trivial.
-Qed.
+(* Lemma R_list_t: forall (R : pterm -> pterm -> Prop) a lt lt',  *)
+(*                 (R_list R lt lt') -> R_list R (a :: lt) (a :: lt'). *)
+(* Proof. *)
+(*  unfold R_list. intros. *)
+(*  case H; clear H. intros b H. *)
+(*  case H; clear H. intros b' H. *)
+(*  case H; clear H. intros l H. *)
+(*  case H; clear H. intros l' H. *)
+(*  destruct H. destruct H0.  *)
+(*  rewrite H. rewrite H0. *)
+(*  exists b. exists b'.  *)
+(*  exists (a :: l). exists l'. simpl. *)
+(*  split; trivial. split; trivial. *)
+(* Qed. *)
 
-Lemma term_mult_app : forall t lu, term (t // lu) <-> term t /\ (term %% lu).
-Proof.
- intros t lu. induction lu; simpl; split; 
- intro H;  try apply H; try split; trivial.
- apply term_distribute_over_application in H. 
- apply IHlu. apply H.
- apply term_distribute_over_application in H.
- split. apply H. apply IHlu. apply H.
- apply term_distribute_over_application. split.
- apply IHlu. split; apply H. apply H.
-Qed.
+(* Lemma term_mult_app : forall t lu, term (t // lu) <-> term t /\ (term %% lu). *)
+(* Proof. *)
+(*  intros t lu. induction lu; simpl; split;  *)
+(*  intro H;  try apply H; try split; trivial. *)
+(*  apply term_distribute_over_application in H.  *)
+(*  apply IHlu. apply H. *)
+(*  apply term_distribute_over_application in H. *)
+(*  split. apply H. apply IHlu. apply H. *)
+(*  apply term_distribute_over_application. split. *)
+(*  apply IHlu. split; apply H. apply H. *)
+(* Qed. *)
 
-Lemma ctx_red_t_mult_app : forall R t lu lu', term t -> term %% lu -> R_list (ES_contextual_closure R) lu lu' -> (ES_contextual_closure R) (t // lu) (t // lu').
-Proof.
- intros R t lu lu' Tt Tlu H. unfold R_list in H. 
- case H; clear H; intros t0 H.
- case H; clear H; intros t1 H.
- case H; clear H; intros l0 H.
- case H; clear H; intros l1 H.
- destruct H. destruct H0. 
- rewrite H. rewrite H0. rewrite H in Tlu. 
- clear H H0. induction l0; simpl. destruct l1; simpl. 
- apply ES_app_right; trivial.
- apply ES_app_right; trivial. 
- simpl in Tlu. rewrite term_distribute_over_application.
- rewrite term_mult_app. destruct Tlu. destruct H0.
- split; trivial. split; trivial.
- simpl in Tlu. destruct Tlu. 
- apply ES_app_left; trivial.
- apply IHl0; trivial. 
-Qed.
+(* Lemma ctx_red_t_mult_app : forall R t lu lu', term t -> term %% lu -> R_list (ES_contextual_closure R) lu lu' -> (ES_contextual_closure R) (t // lu) (t // lu'). *)
+(* Proof. *)
+(*  intros R t lu lu' Tt Tlu H. unfold R_list in H.  *)
+(*  case H; clear H; intros t0 H. *)
+(*  case H; clear H; intros t1 H. *)
+(*  case H; clear H; intros l0 H. *)
+(*  case H; clear H; intros l1 H. *)
+(*  destruct H. destruct H0.  *)
+(*  rewrite H. rewrite H0. rewrite H in Tlu.  *)
+(*  clear H H0. induction l0; simpl. destruct l1; simpl.  *)
+(*  apply ES_app_right; trivial. *)
+(*  apply ES_app_right; trivial.  *)
+(*  simpl in Tlu. rewrite term_distribute_over_application. *)
+(*  rewrite term_mult_app. destruct Tlu. destruct H0. *)
+(*  split; trivial. split; trivial. *)
+(*  simpl in Tlu. destruct Tlu.  *)
+(*  apply ES_app_left; trivial. *)
+(*  apply IHl0; trivial.  *)
+(* Qed. *)
 
-Lemma contextual_R1_R2: forall (R1 R2: pterm -> pterm -> Prop), 
-                           (forall t t', R1 t t' -> R2 t t') -> 
-                           (forall t t', ES_contextual_closure R1 t t' -> ES_contextual_closure R2 t t').
-Proof.
- intros R1 R2 H t t' H'. induction H'.
- apply ES_redex. apply H; trivial.
- apply ES_app_left; trivial.
- apply ES_app_right; trivial.
- apply ES_abs_in with (L := L); trivial.
- apply ES_subst_left with (L := L); trivial.
- apply ES_subst_right; trivial.
-Qed.
+(* Lemma contextual_R1_R2: forall (R1 R2: pterm -> pterm -> Prop),  *)
+(*                            (forall t t', R1 t t' -> R2 t t') ->  *)
+(*                            (forall t t', ES_contextual_closure R1 t t' -> ES_contextual_closure R2 t t'). *)
+(* Proof. *)
+(*  intros R1 R2 H t t' H'. induction H'. *)
+(*  apply ES_redex. apply H; trivial. *)
+(*  apply ES_app_left; trivial. *)
+(*  apply ES_app_right; trivial. *)
+(*  apply ES_abs_in with (L := L); trivial. *)
+(*  apply ES_subst_left with (L := L); trivial. *)
+(*  apply ES_subst_right; trivial. *)
+(* Qed. *)
 
-Lemma ctx_red_h_mult_app : forall R t t' lu, term %% lu -> (ES_contextual_closure R) t t' -> (ES_contextual_closure R) (t // lu) (t' // lu).
-Proof.
- intros R t t' lu Tlu H. induction lu; simpl in *|-*; trivial.
- destruct Tlu. apply ES_app_left; trivial.
- apply IHlu; trivial.
-Qed.
+(* Lemma ctx_red_h_mult_app : forall R t t' lu, term %% lu -> (ES_contextual_closure R) t t' -> (ES_contextual_closure R) (t // lu) (t' // lu). *)
+(* Proof. *)
+(*  intros R t t' lu Tlu H. induction lu; simpl in *|-*; trivial. *)
+(*  destruct Tlu. apply ES_app_left; trivial. *)
+(*  apply IHlu; trivial. *)
+(* Qed. *)
 
-(* ********************************************************************** *)
-(** Some relations between the properties of relations *)
+(* (* ********************************************************************** *) *)
+(* (** Some relations between the properties of relations *) *)
 
-Lemma red_all_to_out : forall (R : pterm -> pterm -> Prop), 
-  red_all R -> red_refl R -> red_out R. 
-Proof.
-  intros_all. auto*.
-Qed.
+(* Lemma red_all_to_out : forall (R : pterm -> pterm -> Prop),  *)
+(*   red_all R -> red_refl R -> red_out R.  *)
+(* Proof. *)
+(*   intros_all. auto*. *)
+(* Qed. *)
 
-Lemma red_out_to_out' : forall (R : pterm -> pterm -> Prop),
-  red_out R -> red_out' R. 
-Proof.
- intros_all. apply H; trivial.
-Qed.
+(* Lemma red_out_to_out' : forall (R : pterm -> pterm -> Prop), *)
+(*   red_out R -> red_out' R.  *)
+(* Proof. *)
+(*  intros_all. apply H; trivial. *)
+(* Qed. *)
 
-Lemma red_out'_to_rename : forall (R : pterm -> pterm -> Prop),
-  red_out' R -> red_rename R. 
-Proof.
-  intros_all.
-  rewrite* (@subst_intro x t). 
-  rewrite* (@subst_intro x t').
-Qed.
+(* Lemma red_out'_to_rename : forall (R : pterm -> pterm -> Prop), *)
+(*   red_out' R -> red_rename R.  *)
+(* Proof. *)
+(*   intros_all. *)
+(*   rewrite* (@subst_intro x t).  *)
+(*   rewrite* (@subst_intro x t'). *)
+(* Qed. *)
 
-Lemma red_out_to_rename : forall (R : pterm -> pterm -> Prop),
-  red_out R -> red_rename R.
-Proof.
-  intros. apply red_out'_to_rename. 
-  apply red_out_to_out'; trivial.
-Qed.
+(* Lemma red_out_to_rename : forall (R : pterm -> pterm -> Prop), *)
+(*   red_out R -> red_rename R. *)
+(* Proof. *)
+(*   intros. apply red_out'_to_rename.  *)
+(*   apply red_out_to_out'; trivial. *)
+(* Qed. *)
 
 
-Lemma red_all_to_through : forall (R : pterm -> pterm -> Prop),
-  red_regular R -> red_all R -> red_through R. 
-Proof.
-  intros_all. lets: (H _ _ H4).
-  rewrite* (@subst_intro x t1). 
-  rewrite* (@subst_intro x u1).
-Qed.
+(* Lemma red_all_to_through : forall (R : pterm -> pterm -> Prop), *)
+(*   red_regular R -> red_all R -> red_through R.  *)
+(* Proof. *)
+(*   intros_all. lets: (H _ _ H4). *)
+(*   rewrite* (@subst_intro x t1).  *)
+(*   rewrite* (@subst_intro x u1). *)
+(* Qed. *)
 
-Lemma red_out_to_swap : forall (R : pterm -> pterm -> Prop),
-  red_out R -> red_swap R. 
-Proof.
-  intros_all. pick_fresh z.
-  apply notin_union in Fr; destruct Fr.
-  apply notin_union in H1; destruct H1.
-  apply notin_union in H1; destruct H1.
-  apply notin_singleton in H1.
-  apply notin_singleton in H4.
-  repeat rewrite <- swap_eq_subst with (z := z); trivial.
-  repeat apply H; trivial.
-Qed. 
+(* Lemma red_out_to_swap : forall (R : pterm -> pterm -> Prop), *)
+(*   red_out R -> red_swap R.  *)
+(* Proof. *)
+(*   intros_all. pick_fresh z. *)
+(*   apply notin_union in Fr; destruct Fr. *)
+(*   apply notin_union in H1; destruct H1. *)
+(*   apply notin_union in H1; destruct H1. *)
+(*   apply notin_singleton in H1. *)
+(*   apply notin_singleton in H4. *)
+(*   repeat rewrite <- swap_eq_subst with (z := z); trivial. *)
+(*   repeat apply H; trivial. *)
+(* Qed.  *)
 
-Lemma red_rename_to_rename' : forall (R : pterm -> pterm -> Prop),
-  red_rename R -> red_rename' R. Print red_rename'.
-Proof.
- intros_all. apply H with (x := x); trivial.
-Qed.
+(* Lemma red_rename_to_rename' : forall (R : pterm -> pterm -> Prop), *)
+(*   red_rename R -> red_rename' R. Print red_rename'. *)
+(* Proof. *)
+(*  intros_all. apply H with (x := x); trivial. *)
+(* Qed. *)
 
-Lemma red_swap_to_rename' : forall (R : pterm -> pterm -> Prop),
-  red_swap R -> red_rename' R.
-Proof.
-  intros_all. unfold red_swap in H.
-  case (x == y); intro H'. rewrite <- H'; trivial.
-  apply (H x (t ^ x) (t' ^ x) y) in H4. unfold open in *|-*.
-  rewrite open_swap_comm in H4.  rewrite open_swap_comm in H4.
-  simpl in H4. case (x == y); case (x == x) in H4; intros; try contradiction. clear e n. 
-  rewrite swap_fresh in H4; trivial. rewrite swap_fresh in H4; trivial.  
-  apply False_ind. apply n; trivial.
-Qed.
+(* Lemma red_swap_to_rename' : forall (R : pterm -> pterm -> Prop), *)
+(*   red_swap R -> red_rename' R. *)
+(* Proof. *)
+(*   intros_all. unfold red_swap in H. *)
+(*   case (x == y); intro H'. rewrite <- H'; trivial. *)
+(*   apply (H x (t ^ x) (t' ^ x) y) in H4. unfold open in *|-*. *)
+(*   rewrite open_swap_comm in H4.  rewrite open_swap_comm in H4. *)
+(*   simpl in H4. case (x == y); case (x == x) in H4; intros; try contradiction. clear e n.  *)
+(*   rewrite swap_fresh in H4; trivial. rewrite swap_fresh in H4; trivial.   *)
+(*   apply False_ind. apply n; trivial. *)
+(* Qed. *)
 
-Lemma red_out'_to_swap : forall (R : pterm -> pterm -> Prop),
-  red_out' R -> red_swap R.
-Proof. 
-  intros_all. pick_fresh z.
-  apply notin_union in Fr; destruct Fr.
-  apply notin_union in H1; destruct H1.
-  apply notin_union in H1; destruct H1.
-  apply notin_singleton in H1.
-  apply notin_singleton in H4.
-  repeat rewrite <- swap_eq_subst with (z := z); trivial.
-  repeat apply H; trivial.
-Qed. 
+(* Lemma red_out'_to_swap : forall (R : pterm -> pterm -> Prop), *)
+(*   red_out' R -> red_swap R. *)
+(* Proof.  *)
+(*   intros_all. pick_fresh z. *)
+(*   apply notin_union in Fr; destruct Fr. *)
+(*   apply notin_union in H1; destruct H1. *)
+(*   apply notin_union in H1; destruct H1. *)
+(*   apply notin_singleton in H1. *)
+(*   apply notin_singleton in H4. *)
+(*   repeat rewrite <- swap_eq_subst with (z := z); trivial. *)
+(*   repeat apply H; trivial. *)
+(* Qed.  *)
 
 (** flavio 2016/02/19
  Lemma red_regular'_pctx : forall (R : pterm -> pterm -> Prop),

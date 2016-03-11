@@ -90,7 +90,6 @@ VFILES:=LibTactics.v\
   LambdaES_Tac.v\
   LambdaES_FV.v\
   LambdaES_Infra.v\
-  Lambda.v\
   Equation_C.v\
   Lambda_Ex.v\
   LambdaESLab_Defs.v\
