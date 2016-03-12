@@ -1,4 +1,4 @@
-DIGEST e306754a6f02dad1c76db074bb9cfe4f
+DIGEST 19aab8889fff676f8bf3d97f8682c917
 FEquation_C
 R15:19 Coq.Arith.Arith <> <> lib
 R21:30 Metatheory <> <> lib
@@ -163,36 +163,55 @@ R9064:9064 Equation_C <> R var
 R9077:9080 Equation_C <> ::x_'=e'_x not
 R9075:9076 Equation_C <> u' var
 R9081:9081 Equation_C <> u var
-inst 23238:23247 <> rw_eqC_red
-R23261:23266 Coq.Classes.Morphisms <> Proper class
-R23291:23305 Equation_C <> red_ctx_mod_eqC def
-R23307:23307 Equation_C <> R var
-R23272:23276 Coq.Classes.Morphisms ProperNotations :signature_scope:x_'==>'_x not
-R23269:23271 Equation_C <> eqC def
-R23280:23284 Coq.Classes.Morphisms ProperNotations :signature_scope:x_'==>'_x not
-R23277:23279 Equation_C <> eqC def
-R23285:23287 Coq.Init.Logic <> iff def
-R23359:23373 Equation_C <> red_ctx_mod_eqC def
-R23467:23473 Equation_C <> eqC_sym thm
-R23467:23473 Equation_C <> eqC_sym thm
-R23489:23497 Equation_C <> eqC_trans thm
-R23489:23497 Equation_C <> eqC_trans thm
-R23548:23556 Equation_C <> eqC_trans thm
-R23548:23556 Equation_C <> eqC_trans thm
-R23600:23614 Equation_C <> red_ctx_mod_eqC def
-inst 23805:23814 <> rw_eqC_trs
-R23828:23833 Coq.Classes.Morphisms <> Proper class
-R23858:23870 Rewriting <> trans_closure ind
-R23873:23887 Equation_C <> red_ctx_mod_eqC def
-R23889:23889 Equation_C <> R var
-R23839:23843 Coq.Classes.Morphisms ProperNotations :signature_scope:x_'==>'_x not
-R23836:23838 Equation_C <> eqC def
-R23847:23851 Coq.Classes.Morphisms ProperNotations :signature_scope:x_'==>'_x not
-R23844:23846 Equation_C <> eqC def
-R23852:23854 Coq.Init.Logic <> iff def
-R23955:23974 Rewriting <> transitive_reduction constr
-R23955:23974 Rewriting <> transitive_reduction constr
-R24041:24047 Equation_C <> eqC_sym thm
-R24041:24047 Equation_C <> eqC_sym thm
-R24079:24105 Rewriting <> transitive_star_derivation' thm
-R24079:24105 Rewriting <> transitive_star_derivation' thm
+prf 9196:9204 <> lc_at_eqc
+R9244:9248 Coq.Init.Logic <> :type_scope:x_'<->'_x not
+R9235:9239 LambdaES_Infra <> lc_at def
+R9243:9243 Equation_C <> t var
+R9241:9241 Equation_C <> n var
+R9249:9253 LambdaES_Infra <> lc_at def
+R9257:9257 Equation_C <> u var
+R9255:9255 Equation_C <> n var
+R9222:9224 Equation_C <> eqc ind
+R9228:9228 Equation_C <> u var
+R9226:9226 Equation_C <> t var
+R9357:9361 LambdaES_Defs <> bswap def
+R9370:9380 LambdaES_Infra <> lc_at_bswap thm
+R9370:9380 LambdaES_Infra <> lc_at_bswap thm
+R9421:9436 LambdaES_Infra <> lc_at_weaken_ind thm
+R9421:9436 LambdaES_Infra <> lc_at_weaken_ind thm
+R9478:9490 LambdaES_Infra <> term_eq_term' thm
+R9478:9490 LambdaES_Infra <> term_eq_term' thm
+R9510:9525 LambdaES_Infra <> lc_at_weaken_ind thm
+R9510:9525 LambdaES_Infra <> lc_at_weaken_ind thm
+R9567:9579 LambdaES_Infra <> term_eq_term' thm
+R9567:9579 LambdaES_Infra <> term_eq_term' thm
+R9619:9620 LambdaES_Defs <> ::'&'_x not
+R9621:9622 LambdaES_Defs <> ::'&'_x not
+R9619:9620 LambdaES_Defs <> ::'&'_x not
+R9621:9622 LambdaES_Defs <> ::'&'_x not
+R9649:9659 LambdaES_Infra <> lc_at_bswap thm
+R9649:9659 LambdaES_Infra <> lc_at_bswap thm
+R9700:9715 LambdaES_Infra <> lc_at_weaken_ind thm
+R9700:9715 LambdaES_Infra <> lc_at_weaken_ind thm
+R9757:9769 LambdaES_Infra <> term_eq_term' thm
+R9757:9769 LambdaES_Infra <> term_eq_term' thm
+R9790:9805 LambdaES_Infra <> lc_at_weaken_ind thm
+R9790:9805 LambdaES_Infra <> lc_at_weaken_ind thm
+R9847:9859 LambdaES_Infra <> term_eq_term' thm
+R9847:9859 LambdaES_Infra <> term_eq_term' thm
+R9882:9893 LambdaES_Infra <> bswap_rec_id thm
+R9882:9893 LambdaES_Infra <> bswap_rec_id thm
+prf 9938:9953 <> lc_at_ES_ctx_eqc
+R10017:10021 Coq.Init.Logic <> :type_scope:x_'<->'_x not
+R10008:10012 LambdaES_Infra <> lc_at def
+R10016:10016 Equation_C <> t var
+R10014:10014 Equation_C <> n var
+R10022:10026 LambdaES_Infra <> lc_at def
+R10030:10030 Equation_C <> u var
+R10028:10028 Equation_C <> n var
+R9972:9992 Rewriting <> ES_contextual_closure ind
+R9994:9996 Equation_C <> eqc ind
+R10001:10001 Equation_C <> u var
+R9999:9999 Equation_C <> t var
+R10111:10119 Equation_C <> lc_at_eqc thm
+R10111:10119 Equation_C <> lc_at_eqc thm
