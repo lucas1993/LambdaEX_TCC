@@ -76,89 +76,89 @@ Qed.
 
 (* ********************************************************************** *)
 (** Properties of reduction *)
-(* Definition L_red_regular (R : pterm -> pterm -> Prop) := *)
-(*   forall t t', R t t' -> Lterm t /\ Lterm t'. *)
+Definition L_red_regular (R : pterm -> pterm -> Prop) :=
+  forall t t', R t t' -> Lterm t /\ Lterm t'.
 
-(* Definition L_red_regular' (R : pterm -> pterm -> Prop) := *)
-(*   forall t t', R t t' -> (Lterm t <-> Lterm t'). *)
+Definition L_red_regular' (R : pterm -> pterm -> Prop) :=
+  forall t t', R t t' -> (Lterm t <-> Lterm t').
 
-(* Definition L_red_refl (R : pterm -> pterm -> Prop) := *)
-(*   forall t, Lterm t -> R t t. *)
+Definition L_red_refl (R : pterm -> pterm -> Prop) :=
+  forall t, Lterm t -> R t t.
 
-(* Definition L_red_in (R : pterm -> pterm -> Prop) := *)
-(*   forall t x u u', Lterm t -> R u u' -> *)
-(*   R ([x ~> u]t) ([x ~> u']t). *)
+Definition L_red_in (R : pterm -> pterm -> Prop) :=
+  forall t x u u', Lterm t -> R u u' ->
+  R ([x ~> u]t) ([x ~> u']t).
 
-(* Definition L_red_out (R : pterm -> pterm -> Prop) := *)
-(*   forall x u t t', Lterm u -> R t t' ->  *)
-(*   R ([x~>u]t) ([x~>u]t'). *)
+Definition L_red_out (R : pterm -> pterm -> Prop) :=
+  forall x u t t', Lterm u -> R t t' -> 
+  R ([x~>u]t) ([x~>u]t').
 
-(* Lemma L_beta_regular : L_red_regular rule_beta. *)
-(* Proof.  *)
-(*  intros_all. induction H. split. *)
-(*  apply Lterm_app; trivial. inversion H.  *)
-(*  apply Lterm_abs with (L := x); trivial. *)
-(*  apply Lbody_open_term; trivial.  *)
-(* Qed. *)
+Lemma L_beta_regular : L_red_regular rule_beta.
+Proof. 
+ intros_all. induction H. split.
+ apply Lterm_app; trivial. inversion H. 
+ apply Lterm_abs with (L := x); trivial.
+ apply Lbody_open_term; trivial. 
+Qed.
 
-(* Lemma L_beta_red_out : L_red_out rule_beta. *)
-(* Proof. *)
-(*  intros_all. destruct H0. simpl. *)
-(*  assert (Q : term u). apply Lterm_is_term; trivial. *)
-(*  rewrite subst_open; trivial. *)
-(*  apply reg_rule_beta; trivial. *)
-(*  unfold Lbody in *|-*. case H0; clear H0. *)
-(*  intros L H0. exists (L \u {{x}}). *)
-(*  intros x1 H2. apply notin_union in H2. destruct H2. *)
-(*  apply notin_singleton in H3. rewrite subst_open_var; trivial. *)
-(*  apply subst_Lterm; trivial. apply H0; trivial. Print subst_Lterm. *)
-(*  apply subst_Lterm; trivial.  *)
-(* Qed. *)
+Lemma L_beta_red_out : L_red_out rule_beta.
+Proof.
+ intros_all. destruct H0. simpl.
+ assert (Q : term u). apply Lterm_is_term; trivial.
+ rewrite subst_open; trivial.
+ apply reg_rule_beta; trivial.
+ unfold Lbody in *|-*. case H0; clear H0.
+ intros L H0. exists (L \u {{x}}).
+ intros x1 H2. apply notin_union in H2. destruct H2.
+ apply notin_singleton in H3. rewrite subst_open_var; trivial.
+ apply subst_Lterm; trivial. apply H0; trivial. Print subst_Lterm.
+ apply subst_Lterm; trivial. 
+Qed.
 
-(* Lemma L_red_out_to_rename : forall (R : pterm -> pterm -> Prop), *)
-(*   L_red_out R -> red_rename R.  *)
-(* Proof. *)
-(*   intros_all. *)
-(*   rewrite* (@subst_intro x t).  *)
-(*   rewrite* (@subst_intro x t'). *)
-(* Qed. *)
+Lemma L_red_out_to_rename : forall (R : pterm -> pterm -> Prop),
+  L_red_out R -> red_rename R. 
+Proof.
+  intros_all.
+  rewrite* (@subst_intro x t). 
+  rewrite* (@subst_intro x t').
+Qed.
 
 
-(* Lemma beta_rename : red_rename rule_beta. *)
-(* Proof. *)
-(*  apply L_red_out_to_rename. *)
-(*  apply L_beta_red_out. *)
-(* Qed. *)
+Lemma beta_rename : red_rename rule_beta.
+Proof.
+ apply L_red_out_to_rename.
+ apply L_beta_red_out.
+Qed.
 
-(* Lemma red_regular_Lctx : forall (R : pterm -> pterm -> Prop), *)
-(*   L_red_regular R -> L_red_regular (L_contextual_closure R). *)
-(* Proof. (*aqui*) *)
-(*   intros_all. induction H0. *)
-(*   apply H; trivial.  *)
-(*   case IHL_contextual_closure. *)
-(*   intros H2 H3. *)
-(*   split; apply Lterm_app; trivial. split; apply Lterm_app; trivial. *)
-(*   apply IHL_contextual_closure. apply IHL_contextual_closure. *)
-(*   split; apply Lterm_abs with (L := L); apply H1; trivial. *)
-(* Qed. *)
+Lemma red_regular_Lctx : forall (R : pterm -> pterm -> Prop),
+  L_red_regular R -> L_red_regular (L_contextual_closure R).
+Proof. (*aqui*)
+  intros_all. induction H0.
+  apply H; trivial. 
+  case IHL_contextual_closure.
+  intros H2 H3.
+  split; apply Lterm_app; trivial. split; apply Lterm_app; trivial.
+  apply IHL_contextual_closure. apply IHL_contextual_closure.
+  split; apply Lterm_abs with (L := L); apply H1; trivial.
+Qed.
 
-(* Lemma red_out_Lctx : forall (R : pterm -> pterm -> Prop), *)
-(*   L_red_out R -> L_red_out (L_contextual_closure R). *)
-(* Proof. *)
-(*  intros_all. induction H1. *)
-(*  apply L_redex. apply H; trivial. *)
-(*  simpl. apply L_app_left; trivial. *)
-(*  apply subst_Lterm; trivial. *)
-(*  simpl. apply L_app_right; trivial. *)
-(*  apply subst_Lterm; trivial. *)
-(*  simpl. apply L_abs_in with (L := L \u {{x}}).  *)
-(*  intros x0 Fr. apply notin_union in Fr. destruct Fr.  *)
-(*  apply notin_singleton in H4. *)
-(*  assert (Q: term u). apply Lterm_is_term; trivial. *)
-(*  rewrite subst_open_var; trivial. *)
-(*  rewrite subst_open_var; trivial. *)
-(*  apply H2; trivial. *)
-(* Qed. *)
+Lemma red_out_Lctx : forall (R : pterm -> pterm -> Prop),
+  L_red_out R -> L_red_out (L_contextual_closure R).
+Proof.
+ intros_all. induction H1.
+ apply L_redex. apply H; trivial.
+ simpl. apply L_app_left; trivial.
+ apply subst_Lterm; trivial.
+ simpl. apply L_app_right; trivial.
+ apply subst_Lterm; trivial.
+ simpl. apply L_abs_in with (L := L \u {{x}}). 
+ intros x0 Fr. apply notin_union in Fr. destruct Fr. 
+ apply notin_singleton in H4.
+ assert (Q: term u). apply Lterm_is_term; trivial.
+ rewrite subst_open_var; trivial.
+ rewrite subst_open_var; trivial.
+ apply H2; trivial.
+Qed.
 
 
 Lemma Lbody_distribute_over_application : forall t u, Lbody (pterm_app t u) <-> Lbody t /\ Lbody u.
@@ -180,15 +180,15 @@ Qed.
 
 (** Reduction on lists **)
 
-(* Lemma Lterm_mult_app : forall t lu, Lterm (t // lu) <-> Lterm t /\ (Lterm %% lu). *)
-(* Proof. *)
-(*  intros t lu. induction lu; simpl; split;  *)
-(*  intro H;  try apply H; try split; trivial. *)
-(*  inversion H. apply IHlu; trivial. *)
-(*  inversion H. split; trivial. apply IHlu; trivial. *)
-(*  destruct H. destruct H0. apply Lterm_app; trivial. *)
-(*  apply IHlu; split; trivial. *)
-(* Qed. *)
+Lemma Lterm_mult_app : forall t lu, Lterm (t // lu) <-> Lterm t /\ (Lterm %% lu).
+Proof.
+ intros t lu. induction lu; simpl; split; 
+ intro H;  try apply H; try split; trivial.
+ inversion H. apply IHlu; trivial.
+ inversion H. split; trivial. apply IHlu; trivial.
+ destruct H. destruct H0. apply Lterm_app; trivial.
+ apply IHlu; split; trivial.
+Qed.
 
 (* ********************************************************************** *)
 (** Local closure for Lambda terms, recursively defined *)
@@ -344,49 +344,49 @@ Proof.
  apply trs_Lctx_app_right; trivial.
 Qed.
 
-(* Lemma Lctx_abs_in_close : forall x R L t t', L_red_regular R -> L_red_out R -> *)
-(*                          L_contextual_closure R t t' -> x \notin L -> *)
-(*                          L_contextual_closure R (pterm_abs (close t x)) (pterm_abs (close t' x)). *)
-(* Proof. *)
-(*  intros x R L t t' H0 H1 H2 Fr. *)
-(*  apply L_abs_in with (L := L). intros z Fr'.  *)
-(*  apply red_out_Lctx in H1. apply L_red_out_to_rename in H1. *)
-(*  apply H1 with (x := x). apply fv_close'. apply fv_close'. *)
-(*  replace (close t x ^ x) with t. replace (close t' x ^ x) with t'; trivial. *)
-(*  apply open_close_var. apply red_regular_Lctx in H0. apply H0 in H2. apply Lterm_is_term. apply H2. *)
-(*  apply open_close_var. apply red_regular_Lctx in H0. apply H0 in H2. apply Lterm_is_term. apply H2. *)
-(* Qed. *)
+Lemma Lctx_abs_in_close : forall x R L t t', L_red_regular R -> L_red_out R ->
+                         L_contextual_closure R t t' -> x \notin L ->
+                         L_contextual_closure R (pterm_abs (close t x)) (pterm_abs (close t' x)).
+Proof.
+ intros x R L t t' H0 H1 H2 Fr.
+ apply L_abs_in with (L := L). intros z Fr'. 
+ apply red_out_Lctx in H1. apply L_red_out_to_rename in H1.
+ apply H1 with (x := x). apply fv_close'. apply fv_close'.
+ replace (close t x ^ x) with t. replace (close t' x ^ x) with t'; trivial.
+ apply open_close_var. apply red_regular_Lctx in H0. apply H0 in H2. apply Lterm_is_term. apply H2.
+ apply open_close_var. apply red_regular_Lctx in H0. apply H0 in H2. apply Lterm_is_term. apply H2.
+Qed.
 
-(* Lemma trs_Lctx_abs_in : forall R L t t', L_red_regular R -> L_red_out R ->  *)
-(*                        (forall x, x \notin L ->  trans_closure (L_contextual_closure R) (t ^ x) (t' ^ x)) -> trans_closure (L_contextual_closure R) (pterm_abs t) (pterm_abs t'). *)
-(* Proof. *)
-(*  intros R L t t' H0 H1 H2.  case var_fresh with (L := L \u (fv t) \u (fv t')). intros x Fr. *)
-(*  apply notin_union in Fr. destruct Fr. apply notin_union in H. destruct H. *)
-(*  assert (Q: trans_closure (L_contextual_closure R) (t ^ x) (t' ^ x)). apply H2; trivial. clear H2. *)
-(*  gen_eq t0 : (t ^ x). gen_eq t1 : (t' ^ x). intros Ht0 Ht1. *)
-(*  replace t with (close t0 x). replace t' with (close t1 x). clear Ht0 Ht1. induction Q. *)
-(*  apply one_step_reduction. apply Lctx_abs_in_close with (L := L); trivial. *)
-(*  apply transitive_reduction with (u := pterm_abs (close u x)); trivial. *)
-(*  apply Lctx_abs_in_close with (L := L); trivial. *)
-(*  rewrite Ht0. rewrite <- close_open_term; trivial.  *)
-(*  rewrite Ht1. rewrite <- close_open_term; trivial. *)
-(* Qed. *)
+Lemma trs_Lctx_abs_in : forall R L t t', L_red_regular R -> L_red_out R -> 
+                       (forall x, x \notin L ->  trans_closure (L_contextual_closure R) (t ^ x) (t' ^ x)) -> trans_closure (L_contextual_closure R) (pterm_abs t) (pterm_abs t').
+Proof.
+ intros R L t t' H0 H1 H2.  case var_fresh with (L := L \u (fv t) \u (fv t')). intros x Fr.
+ apply notin_union in Fr. destruct Fr. apply notin_union in H. destruct H.
+ assert (Q: trans_closure (L_contextual_closure R) (t ^ x) (t' ^ x)). apply H2; trivial. clear H2.
+ gen_eq t0 : (t ^ x). gen_eq t1 : (t' ^ x). intros Ht0 Ht1.
+ replace t with (close t0 x). replace t' with (close t1 x). clear Ht0 Ht1. induction Q.
+ apply one_step_reduction. apply Lctx_abs_in_close with (L := L); trivial.
+ apply transitive_reduction with (u := pterm_abs (close u x)); trivial.
+ apply Lctx_abs_in_close with (L := L); trivial.
+ rewrite Ht0. rewrite <- close_open_term; trivial. 
+ rewrite Ht1. rewrite <- close_open_term; trivial.
+Qed.
 
-(* Lemma str_Lctx_abs_in : forall R L t t', L_red_regular R -> L_red_out R ->  *)
-(*                        (forall x, x \notin L ->  star_closure (L_contextual_closure R) (t ^ x) (t' ^ x)) -> star_closure (L_contextual_closure R) (pterm_abs t) (pterm_abs t'). *)
-(* Proof. *)
-(*  intros R L t t' H0 H1 H2.  case var_fresh with (L := L \u (fv t) \u (fv t')). intros x Fr. *)
-(*  apply notin_union in Fr. destruct Fr. apply notin_union in H. destruct H. *)
-(*  assert (Q: star_closure (L_contextual_closure R) (t ^ x) (t' ^ x)). apply H2; trivial. clear H2. *)
-(*  gen_eq t0 : (t ^ x). gen_eq t1 : (t' ^ x). intros Ht0 Ht1. *)
-(*  replace t with (close t0 x). replace t' with (close t1 x). clear Ht0 Ht1. induction Q. *)
-(*  apply reflexive_reduction. apply star_trans_reduction. induction H2. *)
-(*  apply one_step_reduction. apply Lctx_abs_in_close with (L := L); trivial. *)
-(*  apply transitive_reduction with (u := pterm_abs (close u x)); trivial. *)
-(*  apply Lctx_abs_in_close with (L := L); trivial. *)
-(*  rewrite Ht0. rewrite <- close_open_term; trivial.  *)
-(*  rewrite Ht1. rewrite <- close_open_term; trivial. *)
-(* Qed. *)
+Lemma str_Lctx_abs_in : forall R L t t', L_red_regular R -> L_red_out R -> 
+                       (forall x, x \notin L ->  star_closure (L_contextual_closure R) (t ^ x) (t' ^ x)) -> star_closure (L_contextual_closure R) (pterm_abs t) (pterm_abs t').
+Proof.
+ intros R L t t' H0 H1 H2.  case var_fresh with (L := L \u (fv t) \u (fv t')). intros x Fr.
+ apply notin_union in Fr. destruct Fr. apply notin_union in H. destruct H.
+ assert (Q: star_closure (L_contextual_closure R) (t ^ x) (t' ^ x)). apply H2; trivial. clear H2.
+ gen_eq t0 : (t ^ x). gen_eq t1 : (t' ^ x). intros Ht0 Ht1.
+ replace t with (close t0 x). replace t' with (close t1 x). clear Ht0 Ht1. induction Q.
+ apply reflexive_reduction. apply star_trans_reduction. induction H2.
+ apply one_step_reduction. apply Lctx_abs_in_close with (L := L); trivial.
+ apply transitive_reduction with (u := pterm_abs (close u x)); trivial.
+ apply Lctx_abs_in_close with (L := L); trivial.
+ rewrite Ht0. rewrite <- close_open_term; trivial. 
+ rewrite Ht1. rewrite <- close_open_term; trivial.
+Qed.
 
 
 (******)
