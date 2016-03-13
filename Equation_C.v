@@ -848,7 +848,8 @@ Instance rw_eqC_app : Proper (eqC ++> eqC ++> eqC) pterm_app.
 Proof. 
   intros_all.
   apply eqC_trans with (pterm_app y x0).
-  
+  (*flavio*)
+  Qed
 
 Instance rw_eqC_subst_right : forall t, Proper (eqC ++> eqC) (pterm_sub t).
 Proof.
