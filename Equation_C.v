@@ -45,45 +45,58 @@ Qed.
 Definition eqc_ctx (t u: pterm) := ES_contextual_closure eqc t u.
 Notation "t =c u" := (eqc_ctx t u) (at level 66). 
 
+(** Compatibility of =c+ with the structure of terms. *)
+Lemma eqc_app_l: forall t t' u, term u -> t =c t' -> (pterm_app t u) =c (pterm_app t' u).
+Proof.
+  intros t t' u H1 H2.
+  apply ES_app_left; assumption.
+Qed.  
+
+Lemma eqc_app_r: forall t u u', term t -> u =c u' -> (pterm_app t u) =c (pterm_app t u').
+Proof.
+  intros t u u' H1 H2.
+  apply ES_app_right; assumption.
+Qed.  
+
+Lemma eqc_abs: forall t t', exists L, (forall x, x \notin L -> t^x =c t'^x) -> (pterm_abs t) =c (pterm_abs t').
+Proof.
+  intros t t'.
+  pick_fresh z.
+  exists (fv t \u fv t').
+  intro H.
+  apply ES_abs_in with (fv t \u fv t').
+  intros x H1. apply H; assumption.
+Qed.  
+
 Definition eqc_trans (t u: pterm) := trans_closure eqc_ctx t u.
 Notation "t =c+ u" := (eqc_trans t u) (at level 66). 
 
 (** Compatibility of =c+ with the structure of terms. *)
-
-Lemma eqc_trans_app_l: forall t t' u, t =c+ t' -> (pterm_app t u) =c+ (pterm_app t' u).
+Lemma eqc_trans_app_l: forall t t' u, term u -> t =c+ t' -> (pterm_app t u) =c+ (pterm_app t' u).
 Proof.
-  intros t t' u H.
-  induction H.
+  intros t t' u H1 H2.
+  induction H2.
   apply one_step_reduction.
   apply ES_app_left; assumption.
+
   apply transitive_reduction with (pterm_app u0 u).
   apply ES_app_left; assumption. assumption.
 Qed.  
 
-Lemma eqc_trans_app_r: forall t u u', u =c+ u' -> (pterm_app t u) =c+ (pterm_app t u').
+Lemma eqc_trans_app_r: forall t u u', term t -> u =c+ u' -> (pterm_app t u) =c+ (pterm_app t u').
 Proof.
-  intros t u u' H.
-  induction H.
+  intros t u u' H1 H2.
+  induction H2.
   apply one_step_reduction.
   apply ES_app_right; assumption.
   apply transitive_reduction with (pterm_app t u).
   apply ES_app_right; assumption. assumption.
 Qed.  
 
-Lemma eqc_trans_abs: forall t t' x, exists L, x \notin L -> t^x =c+ t'^x -> (pterm_abs t) =c+ (pterm_abs t').
+Lemma eqc_trans_abs: forall t t', exists L, (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_abs t) =c+ (pterm_abs t').
 Proof.
-  intros t t' x.
-  exists (fv t).
-  intros H0 H1.
-  induction H1.
-  apply one_step_reduction.
-  apply ES_abs_in with (fv t).
-  intros x' H2.
-  assumption.
-  apply transitive_reduction with (pterm_app u0 u).
-  apply ES_app_left; assumption. assumption.
-Qed.  
-
+  intros t t'. pick_fresh z.  exists (fv t \u fv t'). intro H.
+Admitted.
   
 Definition eqC (t : pterm) (u : pterm) := star_closure eqc_ctx t u.
 Notation "t =e u" := (eqC t u) (at level 66). 
