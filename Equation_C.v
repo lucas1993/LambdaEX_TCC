@@ -93,10 +93,10 @@ Proof.
   apply ES_app_right; assumption. assumption.
 Qed.  
 
-Lemma eqc_trans_abs: forall t t', exists L, (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_abs t) =c+ (pterm_abs t').
+(*Lemma eqc_trans_abs: forall t t', exists L, (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_abs t) =c+ (pterm_abs t').
 Proof.
   intros t t'. pick_fresh z.  exists (fv t \u fv t'). intro H.
-Admitted.
+Admitted.*)
   
 Definition eqC (t : pterm) (u : pterm) := star_closure eqc_ctx t u.
 Notation "t =e u" := (eqC t u) (at level 66). 
@@ -153,24 +153,15 @@ Qed.
 
 (** Compatibility of =e with the structure of pre-terms. *)
 
-Lemma pterm_app_r: forall t t' u,  t =e t' -> (pterm_app t u) =e (pterm_app t' u).
+Lemma pterm_app_r: forall t t' u, term u -> t =e t' -> (pterm_app t u) =e (pterm_app t' u).
 Proof.
-  intros t t' u H.
-  induction H. reflexivity.
+  intros t t' u H1 H2.
+  induction H2. reflexivity.
 
-  inversion H.
-  unfold eqC.
-  apply star_trans_reduction.
-  apply one_step_reduction.
-  apply ES_app_left; assumption.
-  unfold eqC.
-  apply star_trans_reduction.
-  apply transitive_reduction with (pterm_app u1 u).
-  apply ES_app_left; assumption.
-  inversion H1.
-  apply one_step_reduction.
-  apply ES_app_left; assumption.
-
+  unfold eqC. apply star_trans_reduction in H.
+  inversion H; subst.
+  apply reflexive_reduction.
+Admitted.
   
 (*** =e inversion *)
 
