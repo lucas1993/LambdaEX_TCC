@@ -1,4 +1,4 @@
-DIGEST 19aab8889fff676f8bf3d97f8682c917
+DIGEST e80d0344feb6735772af1877f140c20b
 FEquation_C
 R15:19 Coq.Arith.Arith <> <> lib
 R21:30 Metatheory <> <> lib
@@ -54,164 +54,36 @@ R813:819 Equation_C <> eqc_def constr
 R813:819 Equation_C <> eqc_def constr
 R843:853 LambdaES_Infra <> bswap_idemp thm
 R843:853 LambdaES_Infra <> bswap_idemp thm
-def 1216:1218 <> eqC
-R1225:1229 LambdaES_Defs <> pterm ind
-R1237:1241 LambdaES_Defs <> pterm ind
-R1247:1258 Rewriting <> star_closure ind
-R1290:1290 Equation_C <> u var
-R1288:1288 Equation_C <> t var
-R1261:1281 Rewriting <> ES_contextual_closure ind
-R1283:1285 Equation_C <> eqc ind
-R1316:1318 Equation_C <> eqC def
-not 1303 <> ::x_'=e'_x
-prf 1390:1395 <> eqC_rf
-R1410:1413 Equation_C <> ::x_'=e'_x not
-R1409:1409 Equation_C <> t var
-R1414:1414 Equation_C <> t var
-R1445:1463 Rewriting <> reflexive_reduction constr
-R1445:1463 Rewriting <> reflexive_reduction constr
-prf 1481:1493 <> ESctx_eqc_sym
-R1544:1564 Rewriting <> ES_contextual_closure ind
-R1572:1572 Equation_C <> t var
-R1570:1570 Equation_C <> u var
-R1566:1568 Equation_C <> eqc ind
-R1510:1530 Rewriting <> ES_contextual_closure ind
-R1538:1538 Equation_C <> u var
-R1536:1536 Equation_C <> t var
-R1532:1534 Equation_C <> eqc ind
-R1623:1630 Rewriting <> ES_redex constr
-R1623:1630 Rewriting <> ES_redex constr
-R1642:1648 Equation_C <> eqc_sym thm
-R1642:1648 Equation_C <> eqc_sym thm
-R1672:1682 Rewriting <> ES_app_left constr
-R1672:1682 Rewriting <> ES_app_left constr
-R1703:1714 Rewriting <> ES_app_right constr
-R1703:1714 Rewriting <> ES_app_right constr
-R1735:1743 Rewriting <> ES_abs_in constr
-R1735:1743 Rewriting <> ES_abs_in constr
-R1776:1788 Rewriting <> ES_subst_left constr
-R1776:1788 Rewriting <> ES_subst_left constr
-R1821:1834 Rewriting <> ES_subst_right constr
-R1821:1834 Rewriting <> ES_subst_right constr
-prf 1861:1867 <> eqC_sym
-R1894:1897 Equation_C <> ::x_'=e'_x not
-R1893:1893 Equation_C <> u var
-R1898:1898 Equation_C <> t var
-R1884:1887 Equation_C <> ::x_'=e'_x not
-R1883:1883 Equation_C <> t var
-R1888:1888 Equation_C <> u var
-R1946:1964 Rewriting <> reflexive_reduction constr
-R1946:1964 Rewriting <> reflexive_reduction constr
-R1990:2002 Equation_C <> ESctx_eqc_sym thm
-R1990:2002 Equation_C <> ESctx_eqc_sym thm
-R2018:2037 Rewriting <> star_trans_reduction constr
-R2018:2037 Rewriting <> star_trans_reduction constr
-R2048:2065 Rewriting <> one_step_reduction constr
-R2048:2065 Rewriting <> one_step_reduction constr
-R2088:2100 Equation_C <> ESctx_eqc_sym thm
-R2088:2100 Equation_C <> ESctx_eqc_sym thm
-R2116:2135 Rewriting <> star_trans_reduction constr
-R2116:2135 Rewriting <> star_trans_reduction constr
-R2182:2199 Rewriting <> one_step_reduction constr
-R2182:2199 Rewriting <> one_step_reduction constr
-R2222:2251 Rewriting <> transitive_closure_composition thm
-R2222:2251 Rewriting <> transitive_closure_composition thm
-R2281:2298 Rewriting <> one_step_reduction constr
-R2281:2298 Rewriting <> one_step_reduction constr
-prf 2328:2336 <> eqC_trans
-R2375:2378 Equation_C <> ::x_'=e'_x not
-R2374:2374 Equation_C <> t var
-R2379:2379 Equation_C <> v var
-R2365:2368 Equation_C <> ::x_'=e'_x not
-R2364:2364 Equation_C <> u var
-R2369:2369 Equation_C <> v var
-R2355:2358 Equation_C <> ::x_'=e'_x not
-R2354:2354 Equation_C <> t var
-R2359:2359 Equation_C <> u var
-R2419:2442 Rewriting <> star_closure_composition thm
-R2419:2442 Rewriting <> star_closure_composition thm
-inst 2479:2484 <> eqC_eq
-R2488:2498 Coq.Classes.RelationClasses <> Equivalence class
-R2500:2502 Equation_C <> eqC def
-R2542:2547 Equation_C <> eqC_rf thm
-R2542:2547 Equation_C <> eqC_rf thm
-R2558:2564 Equation_C <> eqC_sym thm
-R2558:2564 Equation_C <> eqC_sym thm
-R2584:2592 Equation_C <> eqC_trans thm
-R2584:2592 Equation_C <> eqC_trans thm
-def 8925:8939 <> red_ctx_mod_eqC
-R8954:8958 LambdaES_Defs <> pterm ind
-R8945:8949 LambdaES_Defs <> pterm ind
-R8973:8977 LambdaES_Defs <> pterm ind
-R8985:8989 LambdaES_Defs <> pterm ind
-R9008:9014 Coq.Init.Logic <> :type_scope:'exists'_x_'..'_x_','_x not
-R9017:9018 Coq.Init.Logic <> :type_scope:'exists'_x_'..'_x_','_x not
-R9019:9025 Coq.Init.Logic <> :type_scope:'exists'_x_'..'_x_','_x not
-R9028:9029 Coq.Init.Logic <> :type_scope:'exists'_x_'..'_x_','_x not
-R9030:9030 Coq.Init.Logic <> :type_scope:x_'/\'_x not
-R9038:9040 Coq.Init.Logic <> :type_scope:x_'/\'_x not
-R9032:9035 Equation_C <> ::x_'=e'_x not
-R9031:9031 Equation_C <> t var
-R9036:9037 Equation_C <> t' var
-R9041:9041 Coq.Init.Logic <> :type_scope:x_'/\'_x not
-R9071:9074 Coq.Init.Logic <> :type_scope:x_'/\'_x not
-R9082:9082 Coq.Init.Logic <> :type_scope:x_'/\'_x not
-R9042:9062 Rewriting <> ES_contextual_closure ind
-R9069:9070 Equation_C <> u' var
-R9066:9067 Equation_C <> t' var
-R9064:9064 Equation_C <> R var
-R9077:9080 Equation_C <> ::x_'=e'_x not
-R9075:9076 Equation_C <> u' var
-R9081:9081 Equation_C <> u var
-prf 9196:9204 <> lc_at_eqc
-R9244:9248 Coq.Init.Logic <> :type_scope:x_'<->'_x not
-R9235:9239 LambdaES_Infra <> lc_at def
-R9243:9243 Equation_C <> t var
-R9241:9241 Equation_C <> n var
-R9249:9253 LambdaES_Infra <> lc_at def
-R9257:9257 Equation_C <> u var
-R9255:9255 Equation_C <> n var
-R9222:9224 Equation_C <> eqc ind
-R9228:9228 Equation_C <> u var
-R9226:9226 Equation_C <> t var
-R9357:9361 LambdaES_Defs <> bswap def
-R9370:9380 LambdaES_Infra <> lc_at_bswap thm
-R9370:9380 LambdaES_Infra <> lc_at_bswap thm
-R9421:9436 LambdaES_Infra <> lc_at_weaken_ind thm
-R9421:9436 LambdaES_Infra <> lc_at_weaken_ind thm
-R9478:9490 LambdaES_Infra <> term_eq_term' thm
-R9478:9490 LambdaES_Infra <> term_eq_term' thm
-R9510:9525 LambdaES_Infra <> lc_at_weaken_ind thm
-R9510:9525 LambdaES_Infra <> lc_at_weaken_ind thm
-R9567:9579 LambdaES_Infra <> term_eq_term' thm
-R9567:9579 LambdaES_Infra <> term_eq_term' thm
-R9619:9620 LambdaES_Defs <> ::'&'_x not
-R9621:9622 LambdaES_Defs <> ::'&'_x not
-R9619:9620 LambdaES_Defs <> ::'&'_x not
-R9621:9622 LambdaES_Defs <> ::'&'_x not
-R9649:9659 LambdaES_Infra <> lc_at_bswap thm
-R9649:9659 LambdaES_Infra <> lc_at_bswap thm
-R9700:9715 LambdaES_Infra <> lc_at_weaken_ind thm
-R9700:9715 LambdaES_Infra <> lc_at_weaken_ind thm
-R9757:9769 LambdaES_Infra <> term_eq_term' thm
-R9757:9769 LambdaES_Infra <> term_eq_term' thm
-R9790:9805 LambdaES_Infra <> lc_at_weaken_ind thm
-R9790:9805 LambdaES_Infra <> lc_at_weaken_ind thm
-R9847:9859 LambdaES_Infra <> term_eq_term' thm
-R9847:9859 LambdaES_Infra <> term_eq_term' thm
-R9882:9893 LambdaES_Infra <> bswap_rec_id thm
-R9882:9893 LambdaES_Infra <> bswap_rec_id thm
-prf 9938:9953 <> lc_at_ES_ctx_eqc
-R10017:10021 Coq.Init.Logic <> :type_scope:x_'<->'_x not
-R10008:10012 LambdaES_Infra <> lc_at def
-R10016:10016 Equation_C <> t var
-R10014:10014 Equation_C <> n var
-R10022:10026 LambdaES_Infra <> lc_at def
-R10030:10030 Equation_C <> u var
-R10028:10028 Equation_C <> n var
-R9972:9992 Rewriting <> ES_contextual_closure ind
-R9994:9996 Equation_C <> eqc ind
-R10001:10001 Equation_C <> u var
-R9999:9999 Equation_C <> t var
-R10111:10119 Equation_C <> lc_at_eqc thm
-R10111:10119 Equation_C <> lc_at_eqc thm
+def 1216:1222 <> eqc_ctx
+R1230:1234 LambdaES_Defs <> pterm ind
+R1240:1260 Rewriting <> ES_contextual_closure ind
+R1268:1268 Equation_C <> u var
+R1266:1266 Equation_C <> t var
+R1262:1264 Equation_C <> eqc ind
+R1294:1300 Equation_C <> eqc_ctx def
+not 1281 <> ::x_'=c'_x
+def 1337:1345 <> eqc_trans
+R1353:1357 LambdaES_Defs <> pterm ind
+R1363:1375 Rewriting <> trans_closure ind
+R1387:1387 Equation_C <> u var
+R1385:1385 Equation_C <> t var
+R1377:1383 Equation_C <> eqc_ctx def
+R1414:1422 Equation_C <> eqc_trans def
+not 1400 <> ::x_'=c+'_x
+prf 1514:1528 <> eqc_trans_app_l
+R1558:1558 Equation_C <> ::x_'=c+'_x not
+R1572:1578 Equation_C <> ::x_'=c+'_x not
+R1593:1593 Equation_C <> ::x_'=c+'_x not
+R1559:1567 LambdaES_Defs <> pterm_app constr
+R1571:1571 Equation_C <> u var
+R1569:1569 Equation_C <> t var
+R1579:1587 LambdaES_Defs <> pterm_app constr
+R1592:1592 Equation_C <> u var
+R1589:1590 Equation_C <> t' var
+R1547:1551 Equation_C <> ::x_'=c+'_x not
+R1546:1546 Equation_C <> t var
+R1552:1553 Equation_C <> t' var
+R1649:1666 Rewriting <> one_step_reduction constr
+R1649:1666 Rewriting <> one_step_reduction constr
+R1678:1688 Rewriting <> ES_app_left constr
+R1678:1688 Rewriting <> ES_app_left constr
