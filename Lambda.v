@@ -200,7 +200,7 @@ Fixpoint Llc_at (k:nat) (t:pterm) {struct t} : Prop :=
   | pterm_app t1 t2 => Llc_at k t1 /\ Llc_at k t2
   | pterm_abs t1    => Llc_at (S k) t1
   | pterm_sub t1 t2 => False
-  | pterm_sub' t1 t2 => False
+  | pterm_lsub t1 t2 => False
   end.
 
 Definition Lterm' t := Llc_at 0 t.
