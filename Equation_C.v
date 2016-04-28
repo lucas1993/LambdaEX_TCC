@@ -374,16 +374,16 @@ Proof.
     intuition eauto.  intuition eauto.  apply neq_0_lt.  trivial.
     intuition eauto.  apply neq_0_lt.  trivial.
 
-    split; simpl; intros H1. simpl in *. case var_fresh with (L := L).
+    split; simpl; intros H'. simpl in *. case var_fresh with (L := L).
     intros x H2. 
-    split; destruct H1; auto.
+    split; destruct H'; auto.
     rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0); auto. 
     unfold open in *. rewrite <- H0.
-    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto.
+    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0).  auto. auto.
     apply neq_0_lt. trivial. auto. apply neq_0_lt. trivial. auto. 
 
     simpl in *. case var_fresh with (L := L). intros x H2. 
-    split; destruct H1; auto.
+    split; destruct H'; auto.
     rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0); auto. 
     unfold open in *. rewrite H0.
     rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto.
@@ -431,16 +431,16 @@ Proof.
 
     simpl.
     pick_fresh y.
-        apply notin_union in Fr. destruct Fr. apply notin_union in H1. destruct H1.
-        apply notin_union in H1. destruct H1. apply notin_union in H1. destruct H1.
-        apply notin_singleton in H5. 
+        apply notin_union in Fr. destruct Fr. apply notin_union in H2. destruct H2.
+        apply notin_union in H2. destruct H2. apply notin_union in H2. destruct H2.
+        apply notin_singleton in H6. 
         assert (Q: (x \in fv (t ^ y) <-> x \in fv t)).  apply fv_open_. intuition eauto.
         assert (S: (x \in fv (t' ^ y) <-> x \in fv t')).  apply fv_open_. intuition eauto.
-    split; intros H6. apply in_union in H6; destruct H6. apply in_union.
-    left. rewrite <- Q in H6. rewrite <- S. rewrite <- H0. auto. auto.
+    split; intros H7. apply in_union in H7; destruct H7. apply in_union.
+    left. rewrite <- Q in H7. rewrite <- S. rewrite <- H0. auto. auto.
     apply in_union. right; auto.
-    apply in_union in H6; destruct H6. apply in_union.
-    left. rewrite <- S in H6. rewrite <- Q. rewrite H0. auto. auto.
+    apply in_union in H7; destruct H7. apply in_union.
+    left. rewrite <- S in H7. rewrite <- Q. rewrite H0. auto. auto.
     apply in_union. right; auto.
 
     simpl.
@@ -850,19 +850,27 @@ Qed.
 
 Instance rw_eqC_app : Proper (eqC ++> eqC ++> eqC) pterm_app.
 Proof. 
-  intros_all.
-  apply eqC_trans with (pterm_app y x0).
-  (*flavio*)
-  Qed
+    intros_all. apply star_closure_composition with (u:=pterm_app y x0).
+    induction H. constructor. constructor 2. 
+
+    induction H.
+    constructor.
+    constructor 2. auto. admit. constructor 2 with (pterm_app u x0).
+    constructor 2. auto.  admit. auto.
+
+    induction H0. constructor.
+    constructor 2.
+    induction H0.
+    constructor. auto. constructor 3; auto. admit. constructor 2 with (pterm_app y u).
+    constructor 3. auto.  admit. auto.
+Qed.
 
 Instance rw_eqC_subst_right : forall t, Proper (eqC ++> eqC) (pterm_sub t).
 Proof.
  intros_all. induction H.
- apply one_step_reduction. apply p_subst with (L := {}); trivial. intros.
- apply p_redex. apply eqc_rf.
- apply transitive_reduction with (u:= t[u]); trivial.
- apply p_subst with (L := {}); trivial. intros.
- apply p_redex. apply eqc_rf.
+ constructor.
+ constructor 2. induction H. constructor 1; auto. constructor 6. auto. admit.
+ constructor 2 with (t [u]). constructor 6; auto. admit. auto.
 Qed.
 
 (*

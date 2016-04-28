@@ -7,7 +7,7 @@
 Set Implicit Arguments.
 Require Import Metatheory LambdaES_Defs LambdaES_Infra LambdaES_FV.
 Require Import Rewriting_Defs Rewriting_Lib.
-Require Import Equation_C Lambda Lambda_Ex.
+Require Import Equation_C Lambda Lambda_Ex Arith Morphism.
 
 (*
 (** Given a relation Red, constructs its contextual closure just over Lterms *)
@@ -102,6 +102,124 @@ Fixpoint lc_at' (k:nat) (t:pterm) {struct t} : Prop :=
 Definition term'' t := lc_at' 0 t.
 
 Definition body'' t := lc_at' 1 t.
+
+(** Equivalence of [term and [term'] *)
+
+
+Lemma lc_rec_open_var_rec' : forall x t k,
+  lc_at' k (open_rec k x t) -> lc_at' (S k) t.
+Proof.
+  induction t; simpl; introv H; auto*.
+  case_nat; simpls~.
+  split.
+  destruct H. apply lc_rec_open_var_rec with x. auto.
+  split*.
+  destruct H.
+  destruct H0. admit. (* !!!!!!!!!!!!! *)
+Qed.
+
+
+Lemma lab_term_to_term'' : forall t,
+  lab_term t -> term'' t.
+Proof.
+  introv T. induction T; unfold term'; simple~.
+  pick_fresh y. unfold term''. simpl. auto.
+  split; pick_fresh x; simpl; auto. 
+  unfold term''. simpl. pick_fresh x. apply lc_rec_open_var_rec' with (x := (pterm_fvar x)). apply H0. eauto. constructor. pick_fresh x. apply lc_rec_open_var_rec' with (x := (pterm_fvar x)). apply H0. eauto. auto. 
+  constructor. apply term_to_term' in H1. auto. split*. unfold term'' in H0. pick_fresh x. apply lc_rec_open_var_rec' with (x := (pterm_fvar x)). eauto.
+Qed.
+
+Lemma lc_at_open_var_rec' : forall x t k,
+  lc_at' (S k) t -> lc_at' k (open_rec k (pterm_fvar x) t).
+Proof.
+  induction t; simpl; introv H; auto*.
+  case_nat; simpls~.
+  unfold lt in *|-.
+  apply le_lt_or_eq in H.
+  case H.
+  intro H1. apply lt_S_n in H1; trivial.
+  intro H1. assert (n = k).
+  auto. assert (k = n). auto.
+  contradiction.
+  split.
+  destruct H. apply lc_at_open_var_rec. auto.
+  split*.
+  destruct H.
+  destruct H0. admit. (* !!!!!!!!!!!!! *)
+Qed. 
+
+Lemma term''_to_lab_term : forall t,
+  term'' t -> lab_term t.
+Proof.
+  introv. unfold term'.
+  apply pterm_size_induction with (t := t).
+  (* bvar *)
+  simpl. intros. 
+  assert (~ n < 0). auto with arith.
+  contradiction.
+  (* fvar *)
+  simpl. intros.
+  apply lab_term_var. 
+  (* abs *)
+  simpl. intros.
+  apply lab_term_abs with (L := fv t1).
+  intros x Fr.
+  apply (H t1); trivial.
+  unfold open. 
+  apply lc_at_open_var_rec'; trivial.
+  (* app *)
+  intros t1 t2 IHt1 IHt2 H.
+  simpl in H. apply lab_term_app.
+  apply IHt1; apply H.
+  apply IHt2; apply H.
+  (* sub *)
+  intros. simpl in H1.
+  apply lab_term_sub with (L := fv t1).
+  intros x Fr.
+  apply (H0 t1); trivial.
+  unfold open. 
+  apply lc_at_open_var_rec'. apply H1.
+  apply H.  apply H1. 
+  (* sub' *)
+  intros. 
+  unfold term'' in H1. simpl in H1.
+  pick_fresh x.
+  constructor 5 with (fv t \u fv t1 \u fv t3). intros.
+  destruct H1. destruct H3. apply H0. eauto. auto. unfold term''. 
+  apply lc_at_open_var_rec'; auto. destruct H1. apply term'_to_term; auto. destruct H1. destruct* H2.
+Qed.
+
+Lemma term_impl_lab_term: forall t, term t -> lab_term t.
+Proof.
+    induction 1; try constructor; intuition eauto.
+    constructor 3 with L. auto.
+    constructor 4 with L; auto.
+
+Qed.
+
+
+Lemma lab_term_eq_term'' : forall t, lab_term t <-> term'' t.
+Proof. intros. split. apply lab_term_to_term''. apply term''_to_lab_term. Qed.
+
+
+Lemma lab_body_to_body'' : forall t,
+  lab_body t -> body'' t.
+Proof.
+  introv [L H]. pick_fresh x. 
+  applys (@lc_rec_open_var_rec' (pterm_fvar x)).
+  apply lab_term_to_term''. apply~ H.
+Qed.
+
+Lemma body''_to_lab_body : forall t,
+  body'' t -> lab_body t.
+Proof.
+  introv B. exists ({}:vars). introv F.
+  apply term''_to_lab_term. apply~ lc_at_open_var_rec'.
+Qed.
+
+Lemma lab_body_eq_body'' : forall t, lab_body t <-> body'' t.
+Proof. intros. split. apply lab_body_to_body''. apply body''_to_lab_body. Qed.
+
 
 (** Labelled lambda ex calculus. There is just one B rule that works
 both in the labelled and non-labelled calculus. *)
