@@ -91,13 +91,10 @@ Proof.
   apply ES_app_right; assumption. assumption.
 Qed.  
 
-Lemma eqc_trans_abs: forall t t', exists L, forall x, x \notin L -> t^x =c+ t'^x -> (pterm_abs t) =c+ (pterm_abs t').
+Lemma eqc_trans_abs: forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_abs t) =c+ (pterm_abs t').
 Proof.
-  intros t t'. pick_fresh z.  exists (fv t \u fv t').
-  intros x H H'.
-  inversion H'; subst.
-  apply one_step_reduction.
-  Admitted.
+  introv H. Admitted.
+
   
 Definition eqC (t : pterm) (u : pterm) := star_closure eqc_ctx t u.
 Notation "t =e u" := (eqC t u) (at level 66). 
