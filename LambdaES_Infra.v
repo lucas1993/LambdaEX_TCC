@@ -274,58 +274,27 @@ Proof.
   rewrite <- open_close_var with (x:=x) ; auto.
   apply notin_fv_close.
 Qed.
-
+  
 (** Auxiliary lemmas. *)
 
 Lemma term_distribute_over_application : forall t u, term (pterm_app t u) <-> term t /\ term u.
 Proof.
   split.
-    (* -> *)
-  intro. split; 
-  inversion H; assumption.
-  (* <- *)
-  intro.
-  destruct H.
+  intro. split; inversion H; assumption.
+  intro. destruct H.
   apply term_app; assumption.
 Qed.
-
 
 Hint Resolve body_open_term.
 
 Lemma not_body_Sn: forall n, ~(body (pterm_bvar (S n))).
 Proof.
-  intro n.
-  intro H. 
-  elim H.
-  intro L.
-  intro H1.
-  pick_fresh z.
+  intro n. intro H. elim H.
+  intro L. intro H1. pick_fresh z.
   assert (z \notin L). auto.
   assert (term (pterm_bvar (S n) ^ z)).
-  apply H1.
-  assumption.
-  inversion H2.
-Qed.
-
-Lemma body_to_term: forall t x, x \notin fv t -> body t -> term (t^x).
-Proof.
-  intros.
-  inversion* H0.
-Qed.
-
-(*
-Lemma term_to_body: forall t x, x \notin fv t -> term (t^x) -> body t.
-Proof.
-  induction t.
-  intros.
-  unfold body.  
-  simpl in H.
-  exists {}.
-  intros.
-  inversion H0.
-  inversion H3.
-  unfold open.
- *) 
+  apply H1. assumption. inversion H2.
+Qed.  
   
 (* ********************************************************************** *)
 (** Induction Principles Part 1*)
@@ -429,7 +398,7 @@ Fixpoint lc_at (k:nat) (t:pterm) {struct t} : Prop :=
   | pterm_app t1 t2 => lc_at k t1 /\ lc_at k t2
   | pterm_abs t1    => lc_at (S k) t1
   | pterm_sub t1 t2 => (lc_at (S k) t1) /\ lc_at k t2
-  | pterm_sub' t1 t2 => False
+  | pterm_lsub t1 t2 => False
   end.
 
 Definition term' t := lc_at 0 t.
@@ -600,6 +569,10 @@ Inductive SN_ind (n : nat) (R : pterm -> pterm -> Prop) (t : pterm) : Prop :=
 
 Definition SN (R : pterm -> pterm -> Prop) (t : pterm) := exists n, SN_ind n R t.
 Definition NF (R : pterm -> pterm -> Prop) (t : pterm) := forall t', ~ R t t'.
+
+Inductive SN_alt (R : pterm -> pterm -> Prop) (t : pterm) : Prop :=
+| SN_nf : NF R t -> SN_alt R t
+| SN_acc : forall t', R t t' -> SN_alt R t' -> SN_alt R t.
 
 Lemma mult_app_append : forall t1 t2 l, pterm_app t1 t2 // l = t1 // l ++ (t2 :: nil).
 Proof.
@@ -1246,8 +1219,8 @@ Proof.
   intros. rewrite swap_sym. apply swap_var_l.
 Qed.
 
-Lemma swap_eq_subst : forall (x y z : var) t, z <> x -> z <> y -> z \notin (fv t) ->  
-      subst z (pterm_fvar y) ((subst y (pterm_fvar x) (subst x (pterm_fvar z) t))) = [(x,y)] t.
+Lemma swap_eq_m_sb : forall (x y z : var) t, z <> x -> z <> y -> z \notin (fv t) ->  
+      m_sb z (pterm_fvar y) ((m_sb y (pterm_fvar x) (m_sb x (pterm_fvar z) t))) = [(x,y)] t.
 Proof.
  intros. induction t.
  simpl; trivial. simpl in H. apply notin_singleton in H1.
@@ -1291,7 +1264,7 @@ Proof.
  intro H1. pick_fresh z. 
  apply notin_union in Fr. destruct Fr. apply notin_union in H2. destruct H2.
  apply notin_singleton in H2. apply notin_singleton in H4.
- rewrite <- swap_eq_subst with (z := z); trivial.
+ rewrite <- swap_eq_m_sb with (z := z); trivial.
  repeat rewrite subst_open_gen; trivial.  
  replace  ([z ~> pterm_fvar y]([y ~> pterm_fvar x]([x ~> pterm_fvar z]t))) with t.
  replace ([x ~> pterm_fvar z]pterm_fvar y) with (pterm_fvar y).
@@ -2020,6 +1993,40 @@ Proof.
  try omega; trivial.
 Qed.
 
+(*
+Lemma open_rec_indep_comm: forall t x y, {0 ~> pterm_fvar x}({1 ~> pterm_fvar y}t) = {1 ~> pterm_fvar y}({0 ~> pterm_fvar x}t). 
+Proof.
+  Admitted.*)
+    
+Lemma lc_at_open_rec_rename: forall t x y m n, lc_at m (open_rec n (pterm_fvar x) t) -> lc_at m (open_rec n (pterm_fvar y) t).
+Proof.
+  induction t. simpl. introv H. case_nat. constructor. assumption.
+  simpl. intros; trivial. simpl. introv H. destruct H.
+  apply (IHt1 x y) in H. apply (IHt2 x y) in H0.
+  split; assumption. simpl.
+  introv H. apply IHt with x. assumption. simpl.
+  introv H. destruct H. split. apply IHt1 with x; assumption. apply IHt2 with x; assumption.
+  simpl. trivial.
+Qed.  
+
+Corollary term_open_rename: forall t x y, term (t^x) -> term (t^y).  
+Proof.
+  introv H. apply term_eq_term' in H. apply term_eq_term'.
+  apply lc_at_open_rec_rename with x. assumption.
+Qed.
+  
+Lemma body_to_term: forall t x, x \notin fv t -> body t -> term (t^x).
+Proof.
+  intros. inversion* H0.
+Qed.
+
+Lemma term_to_body: forall t x, x \notin fv t -> term (t^x) -> body t.
+Proof.
+  introv H H'. 
+  unfold body.
+  exists (fv t). introv H''. apply term_open_rename with x; assumption.
+Qed.
+  
 (* ********************************************************************** *)
 (** Properties of reduction *)
 
@@ -2366,7 +2373,7 @@ Proof.
   apply notin_union in H1; destruct H1.
   apply notin_singleton in H1.
   apply notin_singleton in H4.
-  repeat rewrite <- swap_eq_subst with (z := z); trivial.
+  repeat rewrite <- swap_eq_m_sb with (z := z); trivial.
   repeat apply H; trivial.
 Qed. 
 
@@ -2397,7 +2404,7 @@ Proof.
   apply notin_union in H1; destruct H1.
   apply notin_singleton in H1.
   apply notin_singleton in H4.
-  repeat rewrite <- swap_eq_subst with (z := z); trivial.
+  repeat rewrite <- swap_eq_m_sb with (z := z); trivial.
   repeat apply H; trivial.
 Qed. 
 

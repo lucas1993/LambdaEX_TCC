@@ -7,7 +7,7 @@
 
 Set Implicit Arguments.
 Require Import Metatheory LambdaES_Defs LambdaES_Infra LambdaES_FV.
-Require Import Rewriting_Defs Rewriting_Lib.
+Require Import Rewriting.
 Require Import Lambda Equation_C.
 
 (** Lambda_ex calculus *)
@@ -51,6 +51,9 @@ Notation "t -->lex+ u" := (lex_trs t u) (at level 66).
 
 Definition lex_str t u := star_closure lex t u.
 Notation "t -->lex* u" := (lex_str t u) (at level 66).
+
+(** The two definitions of SN are equivalent for lex. *)
+Lemma SN_equivSN_alt: forall t, SN lex t <-> SN_alt lex t.
 
 
 (* ********************************************************************** *)

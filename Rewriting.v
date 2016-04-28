@@ -42,14 +42,14 @@ Inductive ESlab_contextual_closure (Red : pterm -> pterm -> Prop) : pterm -> pte
 	  		           ESlab_contextual_closure Red (pterm_app t u) (pterm_app t u')
 | ESlab_abs_in : forall t t' L, (forall x, x \notin L -> ESlab_contextual_closure Red (t^x) (t'^x)) ->
                                 ESlab_contextual_closure Red (pterm_abs t) (pterm_abs t')
-| ESlab_subst_left : forall t t' u L, (forall x, x \notin L -> ESlab_contextual_closure Red (t^x) (t'^x)) -> 
+| ESlab_sub_left : forall t t' u L, (forall x, x \notin L -> ESlab_contextual_closure Red (t^x) (t'^x)) -> 
 	                              term u -> ESlab_contextual_closure Red  (pterm_sub t u) (pterm_sub t' u)
-| ESlab_subst_right : forall t u u', ESlab_contextual_closure Red u u' -> term t ->
+| ESlab_sub_right : forall t u u', ESlab_contextual_closure Red u u' -> term t ->
 	  	                     ESlab_contextual_closure Red  (pterm_sub t u) (pterm_sub t u')
-| ESlab_lsubst_left : forall t t' u L, (forall x, x \notin L -> ESlab_contextual_closure Red (t^x) (t'^x)) -> 
-	                               term u -> ESlab_contextual_closure Red  (pterm_sub t u) (pterm_sub t' u)
-| ESlab_lsubst_right : forall t u u', ESlab_contextual_closure Red u u' -> term t -> 
-	  	                      ESlab_contextual_closure Red  (pterm_sub' t u) (pterm_sub' t u').
+| ESlab_lsub_left : forall t t' u L, (forall x, x \notin L -> ESlab_contextual_closure Red (t^x) (t'^x)) -> 
+	                               term u -> ESlab_contextual_closure Red  (pterm_lsub t u) (pterm_lsub t' u)
+| ESlab_lsub_right : forall t u u', ESlab_contextual_closure Red u u' -> term t -> 
+	  	                      ESlab_contextual_closure Red  (pterm_lsub t u) (pterm_lsub t u').
 
 (** Given a relation Red, constructs its parallel contextual closure *)
 Inductive L_p_contextual_closure (Red : pterm -> pterm -> Prop) : pterm -> pterm -> Prop :=
@@ -65,7 +65,7 @@ Inductive ES_p_contextual_closure (Red : pterm -> pterm -> Prop) : pterm -> pter
 	  		ES_p_contextual_closure Red (pterm_app t u) (pterm_app t' u')
   | ES_p_abs_in : forall t t' L, (forall x, x \notin L -> ES_p_contextual_closure Red (t^x) (t'^x)) -> 
                ES_p_contextual_closure Red (pterm_abs t) (pterm_abs t')
-  | ES_p_subst : forall t t' u u' L, (forall x, x \notin L -> ES_p_contextual_closure Red (t^x) (t'^x)) -> 
+  | ES_p_sub : forall t t' u u' L, (forall x, x \notin L -> ES_p_contextual_closure Red (t^x) (t'^x)) -> 
               ES_p_contextual_closure Red u u' -> 
 	      ES_p_contextual_closure Red  (pterm_sub t u) (pterm_sub t' u').
 

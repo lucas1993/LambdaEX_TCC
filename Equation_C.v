@@ -24,24 +24,6 @@ Proof.
  apply bswap_idemp.
 Qed.
 
-(*
-Lemma eqc_trans: forall t u v, eqc t u -> eqc u v -> eqc t v.
-Proof.
- intros t u v H1 H2.
- destruct H1. inversion H2; subst.
- rewrite bswap_idemp.
- apply eqc_rf. 
-Qed.
-
-Instance eqc_equiv : Equivalence eqc.
-Proof.
- split; intros_all.
- apply eqc_rf.
- apply eqc_sym; trivial.
- generalize H H0. apply eqc_trans.
-Qed.
- *)
-
 Definition eqc_ctx (t u: pterm) := ES_contextual_closure eqc t u.
 Notation "t =c u" := (eqc_ctx t u) (at level 66). 
 
@@ -65,9 +47,25 @@ Proof.
   exists (fv t \u fv t').
   intro H.
   apply ES_abs_in with (fv t \u fv t').
-  intros x H1. apply H; assumption.
+  intros x H'. apply H; assumption.
+Qed.
+
+Lemma eqc_sub_l: forall t t' u, term u -> exists L, (forall x, x \notin L -> t^x =c t'^x) -> (pterm_sub t u) =c (pterm_sub t' u).
+Proof.
+  intros t t' u H.
+  pick_fresh z.
+  exists (fv t \u fv t' \u fv u).
+  intro H'.
+  apply ES_subst_left with (fv t \u fv t' \u fv u).
+  intros x H''. apply H'; assumption. assumption.
 Qed.  
 
+Lemma eqc_sub_r: forall t u u', term t -> u =c u' -> (pterm_sub t u) =c (pterm_sub t u').
+Proof.
+  intros t u u' H H'.
+  apply ES_subst_right; assumption.
+Qed.
+  
 Definition eqc_trans (t u: pterm) := trans_closure eqc_ctx t u.
 Notation "t =c+ u" := (eqc_trans t u) (at level 66). 
 
@@ -93,10 +91,10 @@ Proof.
   apply ES_app_right; assumption. assumption.
 Qed.  
 
-(*Lemma eqc_trans_abs: forall t t', exists L, (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_abs t) =c+ (pterm_abs t').
+Lemma eqc_trans_abs: forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_abs t) =c+ (pterm_abs t').
 Proof.
-  intros t t'. pick_fresh z.  exists (fv t \u fv t'). intro H.
-Admitted.*)
+  introv H. Admitted.
+
   
 Definition eqC (t : pterm) (u : pterm) := star_closure eqc_ctx t u.
 Notation "t =e u" := (eqC t u) (at level 66). 

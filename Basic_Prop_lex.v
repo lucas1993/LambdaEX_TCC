@@ -6,7 +6,7 @@
 
 Set Implicit Arguments.
 Require Import Metatheory LambdaES_Defs LambdaES_Infra LambdaES_FV.
-Require Import Rewriting_Defs Rewriting_Lib.
+Require Import Rewriting.
 Require Import Equation_C Lambda Lambda_Ex.
 
 (** Basic properties **) 
