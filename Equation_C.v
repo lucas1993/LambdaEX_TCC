@@ -68,36 +68,6 @@ Qed.
   
 Definition eqc_trans (t u: pterm) := trans_closure eqc_ctx t u.
 Notation "t =c+ u" := (eqc_trans t u) (at level 66). 
-
-(** Compatibility of =c+ with the structure of terms. *)
-Lemma eqc_trans_app_l: forall t t' u, term u -> t =c+ t' -> (pterm_app t u) =c+ (pterm_app t' u).
-Proof.
-  intros t t' u H1 H2.
-  induction H2.
-  apply one_step_reduction.
-  apply ES_app_left; assumption.
-
-  apply transitive_reduction with (pterm_app u0 u).
-  apply ES_app_left; assumption. assumption.
-Qed.  
-
-Lemma eqc_trans_app_r: forall t u u', term t -> u =c+ u' -> (pterm_app t u) =c+ (pterm_app t u').
-Proof.
-  intros t u u' H1 H2.
-  induction H2.
-  apply one_step_reduction.
-  apply ES_app_right; assumption.
-  apply transitive_reduction with (pterm_app t u).
-  apply ES_app_right; assumption. assumption.
-Qed.  
-
-Lemma eqc_trans_abs: forall t t', exists L, forall x, x \notin L -> t^x =c+ t'^x -> (pterm_abs t) =c+ (pterm_abs t').
-Proof.
-  intros t t'. pick_fresh z.  exists (fv t \u fv t').
-  intros x H H'.
-  inversion H'; subst.
-  apply one_step_reduction.
-  Admitted.
   
 Definition eqC (t : pterm) (u : pterm) := star_closure eqc_ctx t u.
 Notation "t =e u" := (eqC t u) (at level 66). 
@@ -152,43 +122,32 @@ Proof.
  apply eqC_trans with y; trivial.
 Qed.
 
-(** Compatibility of =e with the structure of pre-terms. *)
 
-Lemma pterm_app_r: forall t t' u, term u -> t =e t' -> (pterm_app t u) =e (pterm_app t' u).
-Proof.
-  intros t t' u H1 H2.
-  induction H2. reflexivity.
-
-  unfold eqC. apply star_trans_reduction in H.
-  inversion H; subst.
-  apply reflexive_reduction.
-Admitted.
-  
 (*** =e inversion *)
 
-(*
+
 Lemma eqc_bvar_term  : forall x t, eqc (pterm_bvar x) t -> pterm_bvar x = t.
 Proof.
-  intros x t H. inversion H. trivial.
+  intros x t H. inversion H. 
 Qed.
 
 Lemma eqc_fvar_term  : forall x t, eqc (pterm_fvar x) t -> pterm_fvar x = t.
 Proof.
-  intros x t H. inversion H. trivial.
+  intros x t H. inversion H. 
 Qed.
 
 Lemma eqc_app_term :  forall t u v, eqc (pterm_app u v) t -> pterm_app u v = t.
 Proof. 
    intros t u v H. 
-   inversion H. trivial.
+   inversion H. 
 Qed.
 
 Lemma eqc_abs_term :  forall t t', eqc (pterm_abs t) t' -> pterm_abs t = t' .
 Proof. 
-   intros t t' H. inversion H. trivial.
+   intros t t' H. inversion H. 
 Qed.
 
-Lemma eqc_sub_term :  forall t u t0, eqc (t[u]) t0 -> 
+(* Lemma eqc_sub_term :  forall t u t0, eqc (t[u]) t0 -> 
 (t[u] = t0 \/ exists t', exists v, term u /\ term v /\ t'[v] = t /\ (& t')[u][v] = t0) .
 Proof. 
    intros t u t0 H. inversion H. 
@@ -375,16 +334,16 @@ Proof.
     intuition eauto.  intuition eauto.  apply neq_0_lt.  trivial.
     intuition eauto.  apply neq_0_lt.  trivial.
 
-    split; simpl; intros H1. simpl in *. case var_fresh with (L := L).
+    split; simpl; intros H'. simpl in *. case var_fresh with (L := L).
     intros x H2. 
-    split; destruct H1; auto.
+    split; destruct H'; auto.
     rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0); auto. 
     unfold open in *. rewrite <- H0.
-    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto.
+    rewrite lc_at_open' with (u := pterm_fvar x) (k := 0).  auto. auto.
     apply neq_0_lt. trivial. auto. apply neq_0_lt. trivial. auto. 
 
     simpl in *. case var_fresh with (L := L). intros x H2. 
-    split; destruct H1; auto.
+    split; destruct H'; auto.
     rewrite <- lc_at_open' with (u := pterm_fvar x) (k := 0); auto. 
     unfold open in *. rewrite H0.
     rewrite lc_at_open' with (u := pterm_fvar x) (k := 0). auto. auto.
@@ -432,16 +391,16 @@ Proof.
 
     simpl.
     pick_fresh y.
-        apply notin_union in Fr. destruct Fr. apply notin_union in H1. destruct H1.
-        apply notin_union in H1. destruct H1. apply notin_union in H1. destruct H1.
-        apply notin_singleton in H5. 
+        apply notin_union in Fr. destruct Fr. apply notin_union in H2. destruct H2.
+        apply notin_union in H2. destruct H2. apply notin_union in H2. destruct H2.
+        apply notin_singleton in H6. 
         assert (Q: (x \in fv (t ^ y) <-> x \in fv t)).  apply fv_open_. intuition eauto.
         assert (S: (x \in fv (t' ^ y) <-> x \in fv t')).  apply fv_open_. intuition eauto.
-    split; intros H6. apply in_union in H6; destruct H6. apply in_union.
-    left. rewrite <- Q in H6. rewrite <- S. rewrite <- H0. auto. auto.
+    split; intros H7. apply in_union in H7; destruct H7. apply in_union.
+    left. rewrite <- Q in H7. rewrite <- S. rewrite <- H0. auto. auto.
     apply in_union. right; auto.
-    apply in_union in H6; destruct H6. apply in_union.
-    left. rewrite <- S in H6. rewrite <- Q. rewrite H0. auto. auto.
+    apply in_union in H7; destruct H7. apply in_union.
+    left. rewrite <- S in H7. rewrite <- Q. rewrite H0. auto. auto.
     apply in_union. right; auto.
 
     simpl.
@@ -457,14 +416,14 @@ Proof.
  apply (ES_eqc_fv x) in H. rewrite H; auto.
 Qed.
 
-(*
+
 Lemma red_regular'_eqc : red_regular' eqc.
 Proof.
    unfold red_regular'. intros t0 t1 H'. rewrite term_eq_term'. rewrite term_eq_term'.
    unfold term'. apply lc_at_eqc; trivial.
 Qed.
 
-Lemma pctx_eqc_fv : forall x t u, (p_contextual_closure eqc) t u  -> (x \in (fv t) <-> x \in (fv u)).
+(*Lemma pctx_eqc_fv : forall x t u, (p_contextual_closure eqc) t u  -> (x \in (fv t) <-> x \in (fv u)).
 Proof.
  intros x t u H. induction H. induction H.
  split; trivial. simpl. split.
@@ -521,14 +480,14 @@ Proof.
  right. apply IHp_contextual_closure; trivial.
 Qed.
 *)
-(*
+
 Lemma red_regular_eqC : forall R, red_regular R -> 
                         red_regular (red_ctx_mod_eqC R).
 Proof.
  intros R H. unfold red_regular. intros t t' H'.
  unfold red_ctx_mod_eqC in H'. case H'; clear H'; intros t0 H'.
  case H'; clear H'; intros u0 H'. 
- assert (Q : red_regular (contextual_closure R)).
+ assert (Q : red_regular (ES_contextual_closure R)).
    apply red_regular_ctx; trivial.
  unfold red_regular in Q. 
  assert (Q': term t0 /\ term u0).
@@ -541,9 +500,10 @@ Proof.
  unfold term'. split; [apply H0; apply Q' | apply H2; apply Q'].
 Qed.
 
+(*
 Lemma red_out_eqc : red_out eqc.
 Proof.
- intros x t t' u T H. destruct H; simpl. apply eqc_rf.
+ intros x t t' u T H. destruct H; simpl. apply eqc_def.
  rewrite (subst_bswap_rec 0). apply eqc_rx.
  apply subst_term; trivial.
  apply subst_term; trivial. 
@@ -585,7 +545,7 @@ Proof.
  rewrite <- term_eq_term' in H. 
  apply H; trivial.
 Qed.
-
+*)
 
 Lemma red_out_eqC : red_out eqC.
 Proof.
@@ -627,6 +587,14 @@ Proof.
  rewrite* (@subst_intro x t). 
  rewrite* (@subst_intro x t').
  apply red_out_pctx_eqc; trivial.
+Qed.
+
+Lemma red_rename_eqc : red_rename eqc.
+Proof.
+ intros_all.
+ rewrite* (@subst_intro x t). 
+ rewrite* (@subst_intro x t').
+ apply red_out_eqC; trivial.
 Qed.
 
 Lemma red_rename_eqC : red_rename eqC.
@@ -760,7 +728,68 @@ Proof.
   rewrite subst_intro with (x := x); trivial.
   rewrite subst_intro with (x := x) (t := t2); trivial.
 Qed.
-*)
+
+(** Compatibility of =c+ with the structure of terms. *)
+Lemma eqc_trans_app_l: forall t t' u, term u -> t =c+ t' -> (pterm_app t u) =c+ (pterm_app t' u).
+Proof.
+  intros t t' u H1 H2.
+  induction H2.
+  apply one_step_reduction.
+  apply ES_app_left; assumption.
+
+  apply transitive_reduction with (pterm_app u0 u).
+  apply ES_app_left; assumption. assumption.
+Qed.  
+
+Lemma eqc_trans_app_r: forall t u u', term t -> u =c+ u' -> (pterm_app t u) =c+ (pterm_app t u').
+Proof.
+  intros t u u' H1 H2.
+  induction H2.
+  apply one_step_reduction.
+  apply ES_app_right; assumption.
+  apply transitive_reduction with (pterm_app t u).
+  apply ES_app_right; assumption. assumption.
+Qed.  
+
+Lemma eqc_trans_abs: forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_abs t) =c+ (pterm_abs t').
+Proof. 
+  introv H.
+  pick_fresh z. apply notin_union in Fr. destruct Fr.
+  apply notin_union in H0. destruct H0.
+  assert (t^z =c+ t'^z). apply H; assumption.
+  inversion H3; subst. 
+  apply one_step_reduction. apply ES_abs_in with L.
+  introv H'. apply red_rename
+
+Lemma eqc_trans_sub: forall t t' u L, term u -> (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_sub t u) =c+ (pterm_sub t' u).
+  Proof. Admitted.
+  
+                    
+(** Compatibility of =e with the structure of pre-terms. *)
+
+Lemma eqC_app_l: forall t t' u, term u -> t =e t' -> (pterm_app t u) =e (pterm_app t' u).
+Proof.
+  introv H1 H2.
+  induction H2. reflexivity.
+  apply star_trans_reduction. apply eqc_trans_app_l; assumption.
+Qed.
+
+Lemma eqC_app_r: forall t u u', term t -> u =e u' -> (pterm_app t u) =e (pterm_app t u').
+Proof.
+  introv H1 H2.
+  induction H2. reflexivity.
+  apply star_trans_reduction. apply eqc_trans_app_r; assumption.
+Qed.
+
+Lemma eqC_abs: forall t t' L, (forall x, x \notin L -> t^x =e t'^x) -> (pterm_abs t) =e (pterm_abs t').
+Proof. Admitted.
+
+Lemma eqC_sub: forall t t' u L, term u -> (forall x, x \notin L -> t^x =e t'^x) -> (pterm_sub t u) =e (pterm_sub t' u).
+  Proof. Admitted.
+
+
+                   
+
 (* ********************************************************************** *)
 (** =e Rewriting *)
 
@@ -851,19 +880,27 @@ Qed.
 
 Instance rw_eqC_app : Proper (eqC ++> eqC ++> eqC) pterm_app.
 Proof. 
-  intros_all.
-  apply eqC_trans with (pterm_app y x0).
-  (*flavio*)
-  Qed
+    intros_all. apply star_closure_composition with (u:=pterm_app y x0).
+    induction H. constructor. constructor 2. 
+
+    induction H.
+    constructor.
+    constructor 2. auto. admit. constructor 2 with (pterm_app u x0).
+    constructor 2. auto.  admit. auto.
+
+    induction H0. constructor.
+    constructor 2.
+    induction H0.
+    constructor. auto. constructor 3; auto. admit. constructor 2 with (pterm_app y u).
+    constructor 3. auto.  admit. auto.
+Qed.
 
 Instance rw_eqC_subst_right : forall t, Proper (eqC ++> eqC) (pterm_sub t).
 Proof.
  intros_all. induction H.
- apply one_step_reduction. apply p_subst with (L := {}); trivial. intros.
- apply p_redex. apply eqc_rf.
- apply transitive_reduction with (u:= t[u]); trivial.
- apply p_subst with (L := {}); trivial. intros.
- apply p_redex. apply eqc_rf.
+ constructor.
+ constructor 2. induction H. constructor 1; auto. constructor 6. auto. admit.
+ constructor 2 with (t [u]). constructor 6; auto. admit. auto.
 Qed.
 
 (*
