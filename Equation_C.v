@@ -149,7 +149,7 @@ Proof.
    intros t t' H. inversion H. 
 Qed.
 
-(* Lemma eqc_sub_term :  forall t u t0, eqc (t[u]) t0 -> 
+Lemma eqc_sub_term :  forall t u t0, eqc (t[u]) t0 -> 
 (t[u] = t0 \/ exists t', exists v, term u /\ term v /\ t'[v] = t /\ (& t')[u][v] = t0) .
 Proof. 
    intros t u t0 H. inversion H. 
@@ -224,7 +224,7 @@ Proof.
   apply ESctx_eqc_fvar_term; trivial. 
   apply ESctx_eqc_fvar_term in H. rewrite H; trivial.
 Qed.
-
+(*
 Lemma eqC_app_term :  forall t u v, pterm_app u v =e t ->
                       exists u', exists v', t = pterm_app u' v' /\ u' =e u /\ v' =e v.
 Proof.(* aqui *) 
@@ -548,7 +548,7 @@ Proof.
  apply H; trivial.
 Qed.
 *)
-
+(* flavio 
 Lemma red_out_eqC : red_out eqC.
 Proof.
  intros x u t' t T H. induction H.
@@ -904,7 +904,7 @@ Proof.
  constructor 2. induction H. constructor 1; auto. constructor 6. auto. admit.
  constructor 2 with (t [u]). constructor 6; auto. admit. auto.
 Qed.
-
+*)
 (*
 Instance SN_ind_mod_eqC : forall n R, Proper (eqC ==> iff) (SN_ind n (red_ctx_mod_eqC R)).
 Proof.
