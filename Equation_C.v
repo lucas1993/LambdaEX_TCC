@@ -24,6 +24,8 @@ Proof.
  apply bswap_idemp.
 Qed.
 
+(*It's just a merge test*)
+
 Definition eqc_ctx (t u: pterm) := ES_contextual_closure eqc t u.
 Notation "t =c u" := (eqc_ctx t u) (at level 66). 
 
