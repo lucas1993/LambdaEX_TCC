@@ -88,6 +88,9 @@ Hint Constructors L_contextual_closure ES_contextual_closure ESlab_contextual_cl
 Inductive trans_closure (Red : pterm -> pterm -> Prop) : pterm -> pterm -> Prop :=
   | one_step_reduction : forall t u, Red t u -> trans_closure Red t u
   | transitive_reduction : forall t u v, Red t u -> trans_closure Red u v -> trans_closure Red t v.
+Inductive trans_clos (Red : pterm -> pterm -> Prop) : pterm -> pterm -> Prop :=
+  | one_step_red : forall t u, Red t u -> trans_clos Red t u
+  | trans_step : forall t u v, trans_clos Red t u -> trans_clos Red u v -> trans_clos Red t v.
 
 (** Given a relation Red, constructs its transitive reflexive closure *)
 Inductive star_closure (Red : pterm -> pterm -> Prop) : pterm -> pterm -> Prop :=

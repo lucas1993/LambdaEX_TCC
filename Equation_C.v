@@ -58,51 +58,14 @@ Proof.
   intros x t H. inversion H. inversion H0; trivial.
 Qed.
 
-Lemma ESctx_eqc_app_l: forall t t' u, term u -> t =c t' -> (pterm_app t u) =c (pterm_app t' u).
-Proof.
-  intros t t' u H1 H2.
-  apply ES_app_left; assumption.
-Qed.  
-
-Lemma ESctx_eqc_app_r: forall t u u', term t -> u =c u' -> (pterm_app t u) =c (pterm_app t u').
-Proof.
-  intros t u u' H1 H2.
-  apply ES_app_right; assumption.
-Qed.  
-
-Lemma ESctx_eqc_abs: forall t t' L, (forall x, x \notin L -> t^x =c t'^x) -> (pterm_abs t) =c (pterm_abs t').
-Proof.
-  introv H.
-  pick_fresh z.
-  apply ES_abs_in with (L \u fv t \u fv t').
-  introv H'. apply H. apply notin_union in H'. destruct H'.
-  apply notin_union in H0. destruct H0. assumption.
-Qed.
-
-Lemma ESctx_eqc_sub_l: forall t t' u L, term u -> (forall x, x \notin L -> t^x =c t'^x) -> (pterm_sub t u) =c (pterm_sub t' u).
-Proof.
-  introv H H'.
-  pick_fresh z.
-  apply ES_subst_left with (L \u fv t \u fv t' \u fv u).
-  introv H''. apply H'. apply notin_union in H''. destruct H''.
-  apply notin_union in H0. destruct H0.
-  apply notin_union in H0. destruct H0. assumption. assumption.
-Qed.  
-
-Lemma ESctx_eqc_sub_r: forall t u u', term t -> u =c u' -> (pterm_sub t u) =c (pterm_sub t u').
-Proof.
-  intros t u u' H H'.
-  apply ES_subst_right; assumption.
-Qed.
-
 Lemma ESctx_eqc_sym : forall t u, t =c u -> u =c t.
 Proof.
   introv H. induction H. apply ES_redex. apply eqc_sym; assumption.
-  apply ESctx_eqc_app_l; assumption.
-  apply ESctx_eqc_app_r; assumption.
-  apply ESctx_eqc_abs with L; assumption.
-  apply ESctx_eqc_sub_l with L; assumption.
-  apply ESctx_eqc_sub_r; assumption.
+  apply ES_app_left; assumption.
+  apply ES_app_right; assumption.
+  apply ES_abs_in with L; assumption.
+  apply ES_subst_left with L; assumption.
+  apply ES_subst_right; assumption.
 Qed.
 
 (** Verificar necessidade deste lema.
@@ -143,8 +106,34 @@ Proof.
   exists t u'; reflexivity.
 Qed. *)
 
+Lemma red_out_eqc : red_out eqc.
+Proof.
+  introv T H. destruct H; simpl.
+  assert (([x ~> u](& t)) = & ([x ~> u]t)).
+  rewrite (subst_bswap_rec 0). reflexivity.
+  rewrite <- term_eq_term'; trivial.
+  rewrite H1. apply eqc_def.
+  apply subst_term; trivial.
+  apply subst_term; trivial. 
+Qed.
+
+Lemma red_rename_eqc : red_rename eqc.
+Proof.
+ intros_all.
+ rewrite* (@subst_intro x t). 
+ rewrite* (@subst_intro x t').
+ apply red_out_eqc; trivial.
+Qed.
+
+Lemma red_rename_eqc_ctx: red_rename eqc_ctx.
+Proof.
+  Admitted.
+  
 Definition eqc_trans (t u: pterm) := trans_closure eqc_ctx t u.
 Notation "t =c+ u" := (eqc_trans t u) (at level 66). 
+
+Definition eqc_trans_clos (t u: pterm) := trans_clos eqc_ctx t u.
+Notation "t =+ u" := (eqc_trans_clos t u) (at level 66). 
 
 Lemma eqc_trans_bvar : forall x t, (pterm_bvar x) =c+ t -> pterm_bvar x = t.
 Proof.
@@ -168,6 +157,63 @@ Proof.
   apply IHtrans_closure; reflexivity.
 Qed.
 
+Lemma eqc_open_eq: forall t u x, (t^x) =c u -> (exists t', u = (t'^x)).
+Proof.
+  induction t. introv H. generalize dependent n.
+  intro n. case n. unfold open. simpl. intro H.
+  apply ESctx_eqc_fvar in H. rewrite <- H.
+  exists (pterm_bvar 0). simpl; reflexivity.
+Admitted.
+
+  
+Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> pterm_abs t =c+ pterm_abs t'.
+Proof.
+  introv H.
+  pick_fresh z. apply notin_union in Fr. destruct Fr.
+  apply notin_union in H0. destruct H0.
+  assert (t^z =c+ t'^z). apply H; assumption.
+  gen_eq u:(t^z). gen_eq v:(t'^z). intros.
+  induction H3. apply one_step_reduction. subst.
+  apply ES_abs_in with L. intros. apply* (@red_rename_eqc_ctx z); assumption.
+  apply IHtrans_closure. assumption.
+  
+  
+  introv H.
+  pick_fresh z. apply notin_union in Fr. destruct Fr.
+  apply notin_union in H0. destruct H0.
+  assert (t^z =c+ t'^z). apply H; assumption.
+  inversion H3; subst.
+  apply one_step_reduction. apply ES_abs_in with L.
+  introv H5. apply* (@red_rename_eqc_ctx z); assumption.
+  apply transitive_reduction with u.
+
+  Focus 2.
+  
+  remember (t^z) as u eqn:v. (t^z) as u in H3.
+  remember (t'^z) as v in H3.
+  induction H3.
+  apply one_step_reduction.
+  apply ES_abs_in with L.
+  introv H5. rewrite Hequ in H3. rewrite Heqv in H3.
+  apply* (@red_rename_eqc_ctx z); assumption.
+
+  apply IHtrans_closure. assumption.
+  Check trans_closure_ind.
+  
+Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =+ t'^x) -> pterm_abs t =+ pterm_abs t'.
+Proof.
+  introv H.
+  pick_fresh z. apply notin_union in Fr. destruct Fr.
+  apply notin_union in H0. destruct H0.
+  assert (t^z =+ t'^z). apply H; assumption.
+  remember (t^z) as u. remember (t'^z) as v.
+  induction H3. Focus 2.
+
+  apply IHtrans_closure. rewrite Hequ in H3. subst.
+  admit.
+  assumption.
+Qed.                  
+  
 (** Este lema não vale com as novas definições. Verificar o que é realmente necessário. 
 Lemma eqc_trans_app_term : forall t u v, (pterm_app u v) =c+ t -> pterm_app u v = t.
 Proof. 
@@ -218,6 +264,22 @@ Proof.
  split; intros_all. apply eqC_rf.
  apply eqC_sym; trivial.
  apply eqC_trans with y; trivial.
+Qed.
+
+Lemma red_out_eqC : red_out eqC.
+Proof.
+ intros x u t' t T H. induction H.
+ apply one_step_reduction. apply red_out_pctx_eqc; trivial.
+ apply transitive_reduction with (u := [x ~> u]u0); trivial. 
+ apply red_out_pctx_eqc; trivial.
+Qed.
+
+Lemma red_rename_eqC : red_rename eqC.
+Proof.
+ intros_all.
+ rewrite* (@subst_intro x t). 
+ rewrite* (@subst_intro x t').
+ apply red_out_eqC; trivial.
 Qed.
 
 (** Verificar necessidade deste lema.
@@ -522,14 +584,6 @@ Proof.
 Qed.
 
 (*
-Lemma red_out_eqc : red_out eqc.
-Proof.
- intros x t t' u T H. destruct H; simpl. apply eqc_def.
- rewrite (subst_bswap_rec 0). apply eqc_rx.
- apply subst_term; trivial.
- apply subst_term; trivial. 
- rewrite <- term_eq_term'; trivial.
-Qed.
 
 Lemma red_out_pctx_eqc : red_out (p_contextual_closure eqc).
 Proof.
@@ -568,13 +622,6 @@ Proof.
 Qed.
 *)
 (* flavio 
-Lemma red_out_eqC : red_out eqC.
-Proof.
- intros x u t' t T H. induction H.
- apply one_step_reduction. apply red_out_pctx_eqc; trivial.
- apply transitive_reduction with (u := [x ~> u]u0); trivial. 
- apply red_out_pctx_eqc; trivial.
-Qed.
 
 
 Lemma red_all_eqC : forall x t t' u u', term t -> term u ->
@@ -608,22 +655,6 @@ Proof.
  rewrite* (@subst_intro x t). 
  rewrite* (@subst_intro x t').
  apply red_out_pctx_eqc; trivial.
-Qed.
-
-Lemma red_rename_eqc : red_rename eqc.
-Proof.
- intros_all.
- rewrite* (@subst_intro x t). 
- rewrite* (@subst_intro x t').
- apply red_out_eqC; trivial.
-Qed.
-
-Lemma red_rename_eqC : red_rename eqC.
-Proof.
- intros_all.
- rewrite* (@subst_intro x t). 
- rewrite* (@subst_intro x t').
- apply red_out_eqC; trivial.
 Qed.
 
                 
