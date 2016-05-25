@@ -131,13 +131,16 @@ Qed.
 Lemma red_out_eqc_ctx : red_out eqc_ctx.
 Proof.
   intros_all.
-  unfold eqc_ctx in *.
+  unfold eqc_ctx in *. induction H0.
   apply ES_redex.
-  apply red_out_eqc. assumption.
-  induction t.
-  inversion H0. assumption.
-  inversion H0. assumption.
-  inversion H0. assumption.
+  apply red_out_eqc. assumption. assumption.
+  simpl. apply ES_app_left. assumption.
+  apply subst_term; assumption.
+  simpl. apply ES_app_right. assumption.
+  apply subst_term; assumption.
+  simpl. apply ES_abs_in with L. simpl.
+  introv H2. rewrite subst_open_var. rewrite subst_open_var.
+  apply H1. assumption. intro H3.
 Admitted.  
 
 Lemma red_rename_eqc_ctx: red_rename eqc_ctx.
