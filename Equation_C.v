@@ -138,8 +138,15 @@ Proof.
   apply subst_term; assumption.
   simpl. apply ES_app_right. assumption.
   apply subst_term; assumption.
-  simpl. apply ES_abs_in with L. simpl.
-  introv H2. rewrite subst_open_var. rewrite subst_open_var.
+  pick_fresh z. apply notin_union in Fr. destruct Fr.
+  apply notin_union in H2. destruct H2.
+  apply notin_union in H2. destruct H2.
+  apply notin_union in H2. destruct H2.
+  assert (ES_contextual_closure eqc ([x ~> u]t ^ z) ([x ~> u]t' ^ z)). apply H1; assumption.
+  case (eq_var_dec x z). intro H8. simpl in *.
+  apply ES_abs_in with L. introv H9.
+
+  rewrite subst_open_var. rewrite subst_open_var.
   apply H1. assumption. intro H3.
 Admitted.  
 
