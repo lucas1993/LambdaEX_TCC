@@ -2,6 +2,7 @@ Require Import Arith Metatheory.
 Require Import LibTactics LambdaES_Defs Rewriting.
 Require Import LambdaES_FV LambdaES_Infra LambdaES_Tac.
 Require Export Morphisms.
+Require Import Coq.Program.Equality.
 
 Instance iff_eq : Equivalence iff.
 Proof. 
@@ -91,8 +92,94 @@ Proof.
   apply ES_app_right; assumption. assumption.
 Qed.  
 
-(* Lemma eqc_trans_abs: forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_abs t) =c+ (pterm_abs t').
-Proof. *)
+Lemma red_rename_eqc: red_rename eqc.
+Proof.
+    admit.
+    (*unfold red_rename.*)
+    (*intros.*)
+    (*generalize dependent t'.*)
+    (*generalize dependent x.*)
+    (*induction t; intros.*)
+    (*destruct n.*)
+    (*unfold open in H1.*)
+    (*simpl in H1.*)
+    (*inversion H1.*)
+    (*unfold open in H1.*)
+    (*simpl in H1.*)
+    (*inversion H1.  inversion H1.  inversion H1.  inversion H1.*)
+    (*induction H1.*)
+    (*generalize dependent x.*)
+    (*induction t'; intros; try inversion H1.*)
+    (*inversion H1; subst.*)
+    (*destruct n.*)
+    (*unfold open in H4.*)
+    (*simpl in H4.*)
+    (*inversion H4.*)
+    (*unfold open in H4.*)
+    (*simpl in H4.*)
+    (*inversion H4.*)
+    (*inversion H1.*)
+    (*inversion H1.*)
+    (*inversion H1.*)
+    (*[>unfold open. simpl.<]*)
+    (*[>rewrite <- H4.<]*)
+    (*[>apply eqc_def.<]*)
+
+
+    (*remember (t^x) as t0.*)
+    (*remember (t'^x) as t1.*)
+    (*induction H1; subst.*)
+    (*assert (t' = close (t'^x) x).*)
+    (*apply close_open_term; auto. *)
+    (*assert (t = close (t^x) x).*)
+    (*apply close_open_term; auto. *)
+    (*rewrite H3. rewrite H4.*)
+    (*rewrite  <- Heqt0.*)
+    (*rewrite  <- Heqt1.*)
+    (*simpl.*)
+    (*constructor.*)
+Qed.
+
+Lemma red_rename_eqc_ctx: red_rename eqc_ctx.
+Proof.
+    unfold red_rename.
+    intros.
+    admit.
+    (*remember (t^x) as t0 in H1.*)
+    (*remember (t'^x) as t1 in H1.*)
+    (*generalize dependent t.*)
+    (*generalize dependent t'.*)
+    (*induction H1; intros; subst; auto. *)
+    (*constructor 1. pose red_rename_eqc.*)
+    (*unfold red_rename in *. apply r with x; auto.*)
+    (*apply IHES_contextual_closure; auto.*)
+
+    (*admit.*)
+    (*remember (t^x) as t0.*)
+    (*remember (t'^x) as t1.*)
+    (*induction H1; subst; auto.*)
+    (*pose red_rename_eqc. unfold red_rename in *.*)
+    Qed.
+
+Lemma eqc_trans_abs: forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> (pterm_abs t) =c+ (pterm_abs t').
+Proof. 
+    intros.
+    pick_fresh y.
+    apply notin_union in Fr.  destruct Fr.  apply notin_union in H0.  destruct H0.
+    assert (t^y =c+ t'^y). apply H; auto.
+    remember (t^y) as t0.
+    remember (t'^y) as t1.
+    induction H3.
+    subst.
+    constructor.
+    apply ES_abs_in with L. intros.
+    auto.
+    pose red_rename_eqc_ctx.
+    unfold red_rename in *.
+    apply r with y; auto.
+    subst. apply IHtrans_closure; auto.
+    admit.
+Qed.
 
 Definition eqC (t : pterm) (u : pterm) := star_closure eqc_ctx t u.
 Notation "t =e u" := (eqC t u) (at level 66). 
@@ -163,8 +250,27 @@ Proof.
   apply star_trans_reduction. apply eqc_trans_app_r; assumption.
 Qed.
 
-(* Lemma pterm_abs: forall t t' L, (forall x, x \notin L -> t^x =e t'^x) -> (pterm_abs t) =e (pterm_abs t').
-Proof. *)
+ Lemma pterm_abs: forall t t' L, (forall x, x \notin L -> t^x =e t'^x) -> (pterm_abs t) =e (pterm_abs t').
+Proof. 
+    intros.
+    pick_fresh y.
+    apply notin_union in Fr.  destruct Fr.  apply notin_union in H0.  destruct H0.
+    assert (t^y =e t'^y). apply H; auto.
+    remember (t^y) as t0.
+    remember (t'^y) as t1.
+    induction H3.
+    Focus 2.
+    subst.
+    constructor.
+    apply eqc_trans_abs with L. 
+    intros.
+    admit.
+    pose (H y H0) as e.
+    inversion e; subst.
+    admit. admit.
+    (*constructor 1.*)
+    (*apply eqc_trans_abs with L.*)
+Qed.
 
 
 (*** =e inversion *)

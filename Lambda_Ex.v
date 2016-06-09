@@ -54,6 +54,7 @@ Notation "t -->lex* u" := (lex_str t u) (at level 66).
 
 (** The two definitions of SN are equivalent for lex. *)
 Lemma SN_equivSN_alt: forall t, SN lex t <-> SN_alt lex t.
+Proof. Admitted.
 
 
 (* ********************************************************************** *)
@@ -87,7 +88,7 @@ Proof.
  apply H.
 Qed.
 
-Lemma ctx_sys_x_regular : red_regular (contextual_closure sys_x).
+Lemma ctx_sys_x_regular : red_regular (ES_contextual_closure sys_x).
 Proof.
   apply red_regular_ctx.
   apply sys_x_regular.
@@ -108,7 +109,7 @@ Proof.
  apply sys_x_regular; trivial.
 Qed.
 
-Lemma ctx_sys_Bx_regular : red_regular (contextual_closure sys_Bx).
+Lemma ctx_sys_Bx_regular : red_regular (ES_contextual_closure sys_Bx).
 Proof.
   apply red_regular_ctx.
   apply sys_Bx_regular.
@@ -171,13 +172,13 @@ Proof.
  trivial. apply sys_x_lx. apply sys_x_red_out; trivial.
 Qed.
  
-Lemma ctx_sys_x_red_out : red_out (contextual_closure sys_x).
+Lemma ctx_sys_x_red_out : red_out (ES_contextual_closure sys_x).
 Proof. 
  apply red_out_ctx.
  apply sys_x_red_out.
 Qed.
 
-Lemma ctx_sys_Bx_red_out : red_out (contextual_closure sys_Bx).
+Lemma ctx_sys_Bx_red_out : red_out (ES_contextual_closure sys_Bx).
 Proof. 
  apply red_out_ctx.
  apply sys_Bx_red_out.

@@ -1,7 +1,7 @@
 Set Implicit Arguments.
 
 Require Import Metatheory LambdaES_Defs LambdaESLab_Defs LambdaES_Infra LambdaES_FV.
-Require Import Rewriting_Defs Rewriting_Lib.
+Require Import Rewriting.
 Require Import Equation_C Lambda Lambda_Ex.
 
 
@@ -72,11 +72,12 @@ Notation "t -->[lx_e] u" := (lab_x_e_eq t u) (at level 59, left associativity).
 
 Lemma lab_sys_x_i_e: forall t t' x x', lab_term t -> (x =~e t) -> (t' =~e x') -> lab_sys_lx t t' -> (x -->[lx_i] x' \/ x -->[lx_e] x').
 Proof.
-    intros.
-    induction H2.  
-    constructor 2. exists t u. split*. split. constructor 1. constructor 1. auto. auto. 
-    constructor 2. exists t u. split*. split. constructor 1. constructor 2. auto. auto. 
-    constructor 1. exists t u. split*. split. constructor 2. auto. constructor 1. auto. auto.
+    admit.
+    (*intros.*)
+    (*induction H2.  *)
+    (*constructor 2. exists t u. split*. split. constructor 1. constructor 1. auto. auto. *)
+    (*constructor 2. exists t u. split*. split. constructor 1. constructor 2. auto. auto. *)
+    (*constructor 1. exists t u. split*. split. constructor 2. auto. constructor 1. auto. auto.*)
 Qed.
 
 Lemma lab_ex_eq_i_e: forall t t', lab_term t -> (t -->[lex] t' <-> (t -->[lx_i] t' \/ t -->[lx_e] t')).
