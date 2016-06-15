@@ -137,17 +137,12 @@ Proof.
   simpl. apply ES_app_left. assumption.
   apply subst_term; assumption.
   simpl. apply ES_app_right. assumption.
-  apply subst_term; assumption.
-  pick_fresh z. apply notin_union in Fr. destruct Fr.
-  apply notin_union in H2. destruct H2.
-  apply notin_union in H2. destruct H2.
-  apply notin_union in H2. destruct H2.
-  assert (ES_contextual_closure eqc ([x ~> u]t ^ z) ([x ~> u]t' ^ z)). apply H1; assumption.
-  case (eq_var_dec x z). intro H8. simpl in *.
-  apply ES_abs_in with L. introv H9.
-
+  apply subst_term; assumption. simpl.
+  apply ES_abs_in with ({{x}} \u L). introv H9.
+  apply notin_union in H9. destruct H9.
+  apply notin_singleton in H2.
   rewrite subst_open_var. rewrite subst_open_var.
-  apply H1. assumption. intro H3.
+  apply H1; assumption. assumption. assumption. assumption. assumption.
 Admitted.  
 
 Lemma red_rename_eqc_ctx: red_rename eqc_ctx.
@@ -187,13 +182,19 @@ Proof.
   apply IHtrans_closure; reflexivity.
 Qed.
 
-Lemma eqc_open_eq: forall t u x, (t^x) =c u -> (exists t', u = (t'^x)).
+Lemma eqc_open_in: forall t u x, x \in fv(t^x) -> (t^x) =c u -> x \in fv u.
 Proof.
-  induction t. introv H. generalize dependent n.
-  intro n. case n. unfold open. simpl. intro H.
-  apply ESctx_eqc_fvar in H. rewrite <- H.
-  exists (pterm_bvar 0). simpl; reflexivity.
+  induction t. introv H H'. 
+  case (eq_nat_dec n 0). intro H''. subst.
+  simpl in *. unfold open in H'. simpl in H'.
+  apply ESctx_eqc_fvar in H'. rewrite <- H'.
+  simpl. assumption.
+  intro H1. unfold open in H. simpl in H.
 Admitted.
+
+Lemma eqc_open_eq: forall t x, x \in fv t -> exists t', t = t'^x.
+Proof.
+  Admitted.
 
   
 Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> pterm_abs t =c+ pterm_abs t'.
