@@ -6,8 +6,8 @@
 
 Set Implicit Arguments.
 Require Import Metatheory LambdaES_Defs LambdaES_Infra LambdaES_FV.
-Require Import Rewriting_Defs Rewriting_Lib.
-Require Import Equation_C Lambda Lambda_Ex Arith Morphism.
+Require Import Rewriting.
+Require Import Equation_C Lambda Lambda_Ex Arith Morphisms.
 
 (*
 (** Given a relation Red, constructs its contextual closure just over Lterms *)
@@ -96,7 +96,7 @@ Fixpoint lc_at' (k:nat) (t:pterm) {struct t} : Prop :=
   | pterm_app t1 t2 => lc_at' k t1 /\ lc_at' k t2
   | pterm_abs t1    => lc_at' (S k) t1
   | pterm_sub t1 t2 => (lc_at' (S k) t1) /\ lc_at' k t2
-  | pterm_sub' t1 t2 => (lc_at k t2) /\ (SN lex t2) /\ (lc_at' (S k) t1)
+  | pterm_lsub t1 t2 => (lc_at k t2) /\ (SN lex t2) /\ (lc_at' (S k) t1)
   end.
 
 Definition term'' t := lc_at' 0 t.
@@ -227,7 +227,7 @@ both in the labelled and non-labelled calculus. *)
 (** Labelled equations *)
 
 Inductive lab_eqc  : pterm -> pterm -> Prop := 
-| lab_eqc_rf: forall u, lab_eqc u u
+(*| lab_eqc_rf: forall u, lab_eqc u u*)
 | lab_eqc_rx1 : forall t u v, 
                   lab_term u -> term v -> lab_eqc (t[u][[v]]) ((& t)[[v]][u]) 
 | lab_eqc_rx2 : forall t u v, 
@@ -239,7 +239,7 @@ Lemma lab_eqc_sym : forall t u, lab_eqc t u -> lab_eqc u t.
 Proof.
   intros t u Heqc.
   destruct Heqc.
-  apply lab_eqc_rf.
+  (*apply lab_eqc_rf.*)
   replace ((t [u]) [[v]]) with (((& (& t)) [u]) [[v]]).
   apply lab_eqc_rx2; assumption.
   rewrite bswap_idemp; trivial.
@@ -251,44 +251,44 @@ Proof.
   rewrite bswap_idemp; trivial.
 Qed.  
 
-Lemma lab_eqc_trans : forall t u v, lab_eqc t u -> lab_eqc u v -> lab_eqc t v.
-Proof.
-  intros t u v Htu Huv.
-  destruct Huv.
-  assumption.
-  inversion Htu.
-  apply lab_eqc_rx1; assumption.
-  rewrite bswap_idemp; trivial.
-  apply lab_eqc_rf.
-  inversion Htu.
-  apply lab_eqc_rx2; assumption.
-  rewrite bswap_idemp; trivial.
-  apply lab_eqc_rf.
-  inversion Htu.
-  apply lab_eqc_rx3; assumption.
-  rewrite bswap_idemp; trivial.
-  apply lab_eqc_rf.
-Qed.  
+(*Lemma lab_eqc_trans : forall t u v, lab_eqc t u -> lab_eqc u v -> lab_eqc t v.*)
+(*Proof.*)
+  (*intros t u v Htu Huv.*)
+  (*induction Huv.*)
+  (*[>assumption.<]*)
+  (*inversion Htu; subst.*)
+  (*[>apply lab_eqc_rx1; assumption.<]*)
+  (*rewrite bswap_idemp; trivial.*)
+  (*apply lab_eqc_rf.*)
+  (*inversion Htu.*)
+  (*apply lab_eqc_rx2; assumption.*)
+  (*rewrite bswap_idemp; trivial.*)
+  (*apply lab_eqc_rf.*)
+  (*inversion Htu.*)
+  (*apply lab_eqc_rx3; assumption.*)
+  (*rewrite bswap_idemp; trivial.*)
+  (*apply lab_eqc_rf.*)
+(*Qed.  *)
 
-Instance lab_eqc_eq : Equivalence lab_eqc.
-Proof.
- split; intros_all.
- apply lab_eqc_rf.
- apply lab_eqc_sym; trivial.
- generalize H H0. apply lab_eqc_trans.
-Qed.
+(*Instance lab_eqc_eq : Equivalence lab_eqc.*)
+(*Proof.*)
+ (*split; intros_all.*)
+ (*apply lab_eqc_rf.*)
+ (*apply lab_eqc_sym; trivial.*)
+ (*generalize H H0. apply lab_eqc_trans.*)
+(*Qed.*)
 
 Definition lab_eqC (t: pterm) (u : pterm) :=  trans_closure (lab_contextual_closure lab_eqc) t u . 
 Notation "t =~e u" := (lab_eqC t u) (at level 66).
 
 (** =~e is an equivalence relation *)
 
-Lemma lab_eqC_rf : forall t, t =~e t.
-Proof.
- intro t. 
- apply one_step_reduction.
- apply lab_redex. reflexivity.
-Qed.
+(*Lemma lab_eqC_rf : forall t, t =~e t.*)
+(*Proof.*)
+ (*intro t. *)
+ (*apply one_step_reduction.*)
+ (*apply lab_redex. reflexivity.*)
+(*Qed.*)
 
 (*Lemma lab_eqc_preserves_SN_lex: forall t t', SN lex t -> lab_eqc t t' -> SN lex t'.
 Proof.
@@ -305,31 +305,31 @@ Proof.
   apply lab_eqc_rx1; assumption.
   Admitted.*)
    
-Lemma lab_ctx_eqc_sym : forall t u, (lab_contextual_closure lab_eqc t u) -> lab_contextual_closure lab_eqc u t. 
-Proof.
-  intros t u H. induction H.
-  apply lab_redex. rewrite H. reflexivity.
-  apply lab_app_left; trivial. 
-  apply lab_app_right; trivial.
-  apply lab_abs_in with L; trivial.
-  apply lab_subst_left with (L:=L); trivial.
-  apply lab_subst_right; trivial.
-  apply lab_subst'_left with L; assumption.
-  apply lab_subst'_right; trivial. 
-  apply lab_eqc_sym; assumption.
-Qed.
+(*Lemma lab_ctx_eqc_sym : forall t u, (lab_contextual_closure lab_eqc t u) -> lab_contextual_closure lab_eqc u t. *)
+(*Proof.*)
+  (*intros t u H. induction H.*)
+  (*apply lab_redex. rewrite H. reflexivity.*)
+  (*apply lab_app_left; trivial. *)
+  (*apply lab_app_right; trivial.*)
+  (*apply lab_abs_in with L; trivial.*)
+  (*apply lab_subst_left with (L:=L); trivial.*)
+  (*apply lab_subst_right; trivial.*)
+  (*apply lab_subst'_left with L; assumption.*)
+  (*apply lab_subst'_right; trivial. *)
+  (*apply lab_eqc_sym; assumption.*)
+(*Qed.*)
 
-Lemma lab_eqC_sym : forall t u, t =~e u -> u =~e t.
-Proof.
-  intros t u H.
-  unfold lab_eqC in *.
-  induction H.
-  apply one_step_reduction.
-  apply lab_ctx_eqc_sym; assumption.
-  apply lab_ctx_eqc_sym in H.
-  apply (one_step_reduction (lab_contextual_closure lab_eqc)) in H.
-  apply transitive_closure_composition with u; assumption.
-Qed.  
+(*Lemma lab_eqC_sym : forall t u, t =~e u -> u =~e t.*)
+(*Proof.*)
+  (*intros t u H.*)
+  (*unfold lab_eqC in *.*)
+  (*induction H.*)
+  (*apply one_step_reduction.*)
+  (*apply lab_ctx_eqc_sym; assumption.*)
+  (*apply lab_ctx_eqc_sym in H.*)
+  (*apply (one_step_reduction (lab_contextual_closure lab_eqc)) in H.*)
+  (*apply transitive_closure_composition with u; assumption.*)
+(*Qed.  *)
 
 Lemma lab_eqC_trans : forall t u v, t =~e u -> u =~e v -> t =~e v.
 Proof.
@@ -337,13 +337,13 @@ Proof.
  apply transitive_closure_composition with (u := u); trivial.
 Qed.
 
-Instance lab_eqC_eq : Equivalence lab_eqC.
-Proof.
- split; intros_all.
- apply lab_eqC_rf.
- apply lab_eqC_sym; trivial.
- apply lab_eqC_trans with y; trivial.
-Qed.
+(*Instance lab_eqC_eq : Equivalence lab_eqC.*)
+(*Proof.*)
+ (*split; intros_all.*)
+ (*apply lab_eqC_rf.*)
+ (*apply lab_eqC_sym; trivial.*)
+ (*apply lab_eqC_trans with y; trivial.*)
+(*Qed.*)
 
 Definition eqcc t t' := eqc t t' \/ lab_eqc t t'.
 Notation "t =ee t'" := (eqcc t t') (at level 66).
@@ -378,7 +378,7 @@ Inductive lab_sys_lx: pterm -> pterm -> Prop :=
 | sys_x_lab_lx : forall t u, t ->_lab_x u -> lab_sys_lx t u.
 
 Definition red_ctx_mod_lab_eqC (R: pterm -> pterm -> Prop) (t: pterm) (u : pterm) := 
-           exists t' u', (t =~e t')/\(contextual_closure R t' u')/\(u' =~e u).
+           exists t' u', (t =~e t')/\(ES_contextual_closure R t' u')/\(u' =~e u).
 
 Definition lab_ex (t: pterm) (u : pterm) := 
     exists t' u', (t =~e t')/\(lab_contextual_closure lab_sys_x t' u')/\(u' =~e u).
@@ -398,6 +398,7 @@ Definition red_lab_regular' (R : pterm -> pterm -> Prop) :=
 (** Unlabelled reduction is in the corresponding labelled reduction. *)
 Lemma sys_Bx_is_lab_sys_lx: forall t t', t -->lex t' -> t -->[lex] t'.
 Proof.
+    Admitted.
 
   
 (** Unlabelled of S-terms *)
@@ -408,7 +409,7 @@ Fixpoint U_lab (t : pterm) : pterm :=
   | pterm_app t1 t2 => pterm_app (U_lab t1) (U_lab t2)
   | pterm_abs t1    => pterm_abs (U_lab t1)
   | pterm_sub t1 t2 => pterm_sub (U_lab t1) (U_lab t2)
-  | pterm_sub' t1 t2 => pterm_sub (U_lab t1) t2
+  | pterm_lsub t1 t2 => pterm_sub (U_lab t1) t2
   end.
 
 

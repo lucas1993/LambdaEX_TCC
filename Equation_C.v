@@ -197,40 +197,41 @@ Proof.
 Admitted.
 
   
-Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> pterm_abs t =c+ pterm_abs t'.
-Proof.
-  introv H.
-  pick_fresh z. apply notin_union in Fr. destruct Fr.
-  apply notin_union in H0. destruct H0.
-  assert (t^z =c+ t'^z). apply H; assumption.
-  gen_eq u:(t^z). gen_eq v:(t'^z). intros.
-  induction H3. apply one_step_reduction. subst.
-  apply ES_abs_in with L. intros. apply* (@red_rename_eqc_ctx z); assumption.
-  apply IHtrans_closure. assumption.
+(*Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> pterm_abs t =c+ pterm_abs t'.*)
+(*Proof.*)
+  (*introv H.*)
+  (*pick_fresh z. apply notin_union in Fr. destruct Fr.*)
+  (*apply notin_union in H0. destruct H0.*)
+  (*assert (t^z =c+ t'^z). apply H; assumption.*)
+  (*gen_eq u:(t^z). gen_eq v:(t'^z). intros.*)
+  (*induction H3. apply one_step_reduction. subst.*)
+  (*apply ES_abs_in with L. intros. apply* (@red_rename_eqc_ctx z); assumption.*)
+  (*apply IHtrans_closure. assumption.*)
   
+  (*admit.*)
   
-  introv H.
-  pick_fresh z. apply notin_union in Fr. destruct Fr.
-  apply notin_union in H0. destruct H0.
-  assert (t^z =c+ t'^z). apply H; assumption.
-  inversion H3; subst.
-  apply one_step_reduction. apply ES_abs_in with L.
-  introv H5. apply* (@red_rename_eqc_ctx z); assumption.
-  apply transitive_reduction with u.
+  (*introv H.*)
+  (*pick_fresh z. apply notin_union in Fr. destruct Fr.*)
+  (*apply notin_union in H0. destruct H0.*)
+  (*assert (t^z =c+ t'^z). apply H; assumption.*)
+  (*inversion H3; subst.*)
+  (*apply one_step_reduction. apply ES_abs_in with L.*)
+  (*introv H5. apply* (@red_rename_eqc_ctx z); assumption.*)
+  (*apply transitive_reduction with u.*)
 
-  Focus 2.
+  (*Focus 2.*)
   
-  remember (t^z) as u eqn:v. (t^z) as u in H3.
-  remember (t'^z) as v in H3.
-  induction H3.
-  apply one_step_reduction.
-  apply ES_abs_in with L.
-  introv H5. rewrite Hequ in H3. rewrite Heqv in H3.
-  apply* (@red_rename_eqc_ctx z); assumption.
+  (*remember (t^z) as u eqn:v. (t^z) as u in H3.*)
+  (*remember (t'^z) as v in H3.*)
+  (*induction H3.*)
+  (*apply one_step_reduction.*)
+  (*apply ES_abs_in with L.*)
+  (*introv H5. rewrite Hequ in H3. rewrite Heqv in H3.*)
+  (*apply* (@red_rename_eqc_ctx z); assumption.*)
 
-  apply IHtrans_closure. assumption.
-  Check trans_closure_ind.
-Qed.
+  (*apply IHtrans_closure. assumption.*)
+  (*Check trans_closure_ind.*)
+(*Qed.*)
   
 Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =+ t'^x) -> pterm_abs t =+ pterm_abs t'.
 Proof.
@@ -241,9 +242,8 @@ Proof.
   remember (t^z) as u. remember (t'^z) as v.
   induction H3. Focus 2.
 
-  apply IHtrans_closure. rewrite Hequ in H3. subst.
-  admit.
-  assumption.
+  apply IHtrans_clos1. assumption.
+  admit. admit.
 Qed.                  
   
 (** Este lema não vale com as novas definições. Verificar o que é realmente necessário. 
@@ -298,21 +298,21 @@ Proof.
  apply eqC_trans with y; trivial.
 Qed.
 
-Lemma red_out_eqC : red_out eqC.
-Proof.
- intros x u t' t T H. induction H.
- apply one_step_reduction. apply red_out_pctx_eqc; trivial.
- apply transitive_reduction with (u := [x ~> u]u0); trivial. 
- apply red_out_pctx_eqc; trivial.
-Qed.
+(*Lemma red_out_eqC : red_out eqC.*)
+(*Proof.*)
+ (*intros x u t' t T H. induction H.*)
+ (*constructor 1.*)
+ (*constructor 2 with (u := [x ~> u]u0); trivial. *)
+ (*apply red_out_pctx_eqc; trivial.*)
+(*Qed.*)
 
-Lemma red_rename_eqC : red_rename eqC.
-Proof.
- intros_all.
- rewrite* (@subst_intro x t). 
- rewrite* (@subst_intro x t').
- apply red_out_eqC; trivial.
-Qed.
+(*Lemma red_rename_eqC : red_rename eqC.*)
+(*Proof.*)
+ (*intros_all.*)
+ (*rewrite* (@subst_intro x t). *)
+ (*rewrite* (@subst_intro x t').*)
+ (*apply red_out_eqC; trivial.*)
+(*Qed.*)
 
 (** Verificar necessidade deste lema.
 Lemma eqc_sub_term :  forall t u t0, (t[u]) =e t0 -> 

@@ -70,14 +70,56 @@ Definition lab_x_e_eq (t: pterm) (u : pterm) :=
 Notation "t -->[lx_i] u" := (lab_x_i_eq t u) (at level 59, left associativity).
 Notation "t -->[lx_e] u" := (lab_x_e_eq t u) (at level 59, left associativity).
 
-Lemma lab_sys_x_i_e: forall t t' x x', lab_term t -> (x =~e t) -> (t' =~e x') -> lab_sys_lx t t' -> (x -->[lx_i] x' \/ x -->[lx_e] x').
+Lemma lab_sys_x_i_e: forall t t' x x', lab_term t -> (x =ee t) -> (t' =ee x') -> lab_sys_lx t t' -> (x -->[lx_i] x' \/ x -->[lx_e] x').
 Proof.
-    admit.
-    (*intros.*)
-    (*induction H2.  *)
-    (*constructor 2. exists t u. split*. split. constructor 1. constructor 1. auto. auto. *)
-    (*constructor 2. exists t u. split*. split. constructor 1. constructor 2. auto. auto. *)
-    (*constructor 1. exists t u. split*. split. constructor 2. auto. constructor 1. auto. auto.*)
+    intros.
+    induction H2.  
+    constructor 2. exists t u. split*. split. constructor 1. constructor 1. auto. auto. 
+    constructor 2. exists t u. split*. split. constructor 1. constructor 2. auto. auto. 
+    constructor 1. exists t u. split*. split. constructor 1. auto. constructor 2. auto. auto. auto.
+Qed.
+
+Lemma lab_x_i_sys_lx: forall t t', lab_x_i t t' -> lab_sys_lx t t'.
+Proof.
+    intros.
+    induction H.
+    destruct H0.  destruct H0.
+    destruct H0.
+    destruct H1.
+    induction H1.
+Qed.
+
+Lemma eqcc_lab_term: forall t t', lab_term t -> t =ee t' -> lab_term t'.
+Proof.
+    intros. induction H0. inversion H0; subst. 
+    apply term''_to_lab_term.
+    apply lab_term_to_term'' in H. unfold term'' in *. simpl.
+    simpl in H. destruct H. destruct H. split. split. admit. admit. admit. 
+
+    inversion H0; subst.
+    apply term''_to_lab_term.
+    apply lab_term_to_term'' in H. unfold term'' in *. simpl.
+    simpl in H. destruct H. destruct H3. destruct H4. 
+    split. split. apply lc_at_weaken_ind with 0. auto. auto. 
+    split*.  admit. admit. 
+
+    inversion H0; subst.
+    apply term''_to_lab_term.
+    apply lab_term_to_term'' in H. unfold term'' in *. simpl.
+    simpl in H. destruct H. destruct H. destruct H4. 
+    split. apply term_to_term' in H5; unfold term' in *; auto. 
+    split*. split. admit.
+    admit. 
+
+
+    inversion H0; subst.
+    apply term''_to_lab_term.
+    apply lab_term_to_term'' in H. unfold term'' in *. simpl.
+    simpl in H. destruct H. destruct H3. destruct H4. destruct H6. 
+    split. apply term_to_term' in H5; unfold term' in *; auto. 
+    split*. split. apply lc_at_weaken_ind with 0. auto. auto. 
+    split*.
+    admit. 
 Qed.
 
 Lemma lab_ex_eq_i_e: forall t t', lab_term t -> (t -->[lex] t' <-> (t -->[lx_i] t' \/ t -->[lx_e] t')).
@@ -87,12 +129,16 @@ Proof.
     destruct H0.  destruct H0. destruct H0.  destruct H1.
     generalize dependent t.
     generalize dependent t'.
-    induction H1. intros.
-    apply lab_sys_x_i_e with t0 s; auto. admit.
-    Focus 9.
+    induction H1; intros.
 
+    apply lab_sys_x_i_e with t s; auto. apply eqcc_lab_term with t0; auto*.
+    inversion H2; subst. inversion H4; subst. inversion H4; subst.
+    inversion H2; subst. inversion H4; subst. inversion H4; subst.
+    inversion H2; subst. inversion H4; subst. inversion H4; subst.
 
+    Focus 5.
     intros. destruct H0; destruct H0; destruct H0; destruct H0; destruct H1; induction H1.
+    exists t0 s. split*. split*. constructor 1; auto. constructor.
     exists (t1 [[t2]]) (t1 [[t2']]). split*. split. constructor 8. inversion H1. 
     exists L; auto. inversion H1; auto.  inversion H3. constructor 1; auto.
     constructor 2; auto. auto. 
