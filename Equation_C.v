@@ -2,7 +2,6 @@ Require Import Arith Metatheory.
 Require Import LibTactics LambdaES_Defs Rewriting.
 Require Import LambdaES_FV LambdaES_Infra LambdaES_Tac.
 Require Export Morphisms.
-Require Import Coq.Program.Equality.
 
 Instance iff_eq : Equivalence iff.
 Proof. 
@@ -133,23 +132,34 @@ Lemma red_out_eqc_ctx : red_out eqc_ctx.
 Proof.
   intros_all.
   unfold eqc_ctx in *. induction H0.
+  
   apply ES_redex.
   apply red_out_eqc. assumption. assumption.
+  
   simpl. apply ES_app_left. assumption.
   apply subst_term; assumption.
+  
   simpl. apply ES_app_right. assumption.
   apply subst_term; assumption.
-  pick_fresh z. apply notin_union in Fr. destruct Fr.
-  apply notin_union in H2. destruct H2.
-  apply notin_union in H2. destruct H2.
-  apply notin_union in H2. destruct H2.
-  assert (ES_contextual_closure eqc ([x ~> u]t ^ z) ([x ~> u]t' ^ z)). apply H1; assumption.
-  case (eq_var_dec x z). intro H8. simpl in *.
-  apply ES_abs_in with L. introv H9.
+  
+  simpl. apply ES_abs_in with ({{x}} \u L).
+  intros. apply notin_union in H2. destruct H2.
+  apply notin_singleton in H2.
+  repeat rewrite subst_open_var.
+  apply H1. assumption. assumption. assumption.
+  assumption. assumption.
+  
+  simpl. apply ES_subst_left with ({{x}} \u L).
+  intros. apply notin_union in H3. destruct H3.
+  apply notin_singleton in H3.
+  repeat rewrite subst_open_var. apply H1; assumption.
+  assumption. assumption. assumption. assumption.
+  apply subst_term; assumption.
+  
+  simpl. apply ES_subst_right. apply IHES_contextual_closure.
+  apply subst_term; assumption.
+Qed.
 
-  rewrite subst_open_var. rewrite subst_open_var.
-  apply H1. assumption. 
-Admitted.  
 
 Lemma red_rename_eqc_ctx: red_rename eqc_ctx.
 Proof.
@@ -188,27 +198,33 @@ Proof.
   apply IHtrans_closure; reflexivity.
 Qed.
 
-Lemma eqc_open_eq: forall t u x, (t^x) =c u -> (exists t', u = (t'^x)).
+Lemma eqc_open_in: forall t u x, x \in fv(t^x) -> (t^x) =c u -> x \in fv u.
 Proof.
-  induction t. introv H. generalize dependent n.
-  intro n. case n. unfold open. simpl. intro H.
-  apply ESctx_eqc_fvar in H. rewrite <- H.
-  exists (pterm_bvar 0). simpl; reflexivity.
+  induction t. introv H H'. 
+  case (eq_nat_dec n 0). intro H''. subst.
+  simpl in *. unfold open in H'. simpl in H'.
+  apply ESctx_eqc_fvar in H'. rewrite <- H'.
+  simpl. assumption.
+  intro H1. unfold open in H. simpl in H.
 Admitted.
 
+Lemma eqc_open_eq: forall t x, x \in fv t -> exists t', t = t'^x.
+Proof.
+  Admitted.
+
   
-(*Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> pterm_abs t =c+ pterm_abs t'.*)
-(*Proof.*)
-  (*introv H.*)
-  (*pick_fresh z. apply notin_union in Fr. destruct Fr.*)
-  (*apply notin_union in H0. destruct H0.*)
-  (*assert (t^z =c+ t'^z). apply H; assumption.*)
-  (*gen_eq u:(t^z). gen_eq v:(t'^z). intros.*)
-  (*induction H3. apply one_step_reduction. subst.*)
-  (*apply ES_abs_in with L. intros. apply* (@red_rename_eqc_ctx z); assumption.*)
-  (*apply IHtrans_closure. assumption.*)
+Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =c+ t'^x) -> pterm_abs t =c+ pterm_abs t'.
+Proof.
+  introv H.
+  pick_fresh z. apply notin_union in Fr. destruct Fr.
+  apply notin_union in H0. destruct H0.
+  assert (t^z =c+ t'^z). apply H; assumption.
+  gen_eq u:(t^z). gen_eq v:(t'^z). intros.
+  induction H3. apply one_step_reduction. subst.
+  apply ES_abs_in with L. intros. apply* (@red_rename_eqc_ctx z); assumption.
+  apply IHtrans_closure. assumption.
+Admitted.
   
-  (*admit.*)
   
   (*introv H.*)
   (*pick_fresh z. apply notin_union in Fr. destruct Fr.*)
@@ -231,20 +247,20 @@ Admitted.
 
   (*apply IHtrans_closure. assumption.*)
   (*Check trans_closure_ind.*)
-(*Qed.*)
   
-Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =+ t'^x) -> pterm_abs t =+ pterm_abs t'.
-Proof.
-  introv H.
-  pick_fresh z. apply notin_union in Fr. destruct Fr.
-  apply notin_union in H0. destruct H0.
-  assert (t^z =+ t'^z). apply H; assumption.
-  remember (t^z) as u. remember (t'^z) as v.
-  induction H3. Focus 2.
+(*Lemma eqc_trans_abs : forall t t' L, (forall x, x \notin L -> t^x =+ t'^x) -> pterm_abs t =+ pterm_abs t'.*)
+(*Proof.*)
+  (*introv H.*)
+  (*pick_fresh z. apply notin_union in Fr. destruct Fr.*)
+  (*apply notin_union in H0. destruct H0.*)
+  (*assert (t^z =+ t'^z). apply H; assumption.*)
+  (*remember (t^z) as u. remember (t'^z) as v.*)
+  (*induction H3. Focus 2.*)
 
-  apply IHtrans_clos1. assumption.
-  admit. admit.
-Qed.                  
+  (*apply IHtrans_clos1. rewrite Hequ in H3_. subst.*)
+  (*reflexivity.*)
+  (*admit.*)
+(*Qed.                  *)
   
 (** Este lema não vale com as novas definições. Verificar o que é realmente necessário. 
 Lemma eqc_trans_app_term : forall t u v, (pterm_app u v) =c+ t -> pterm_app u v = t.
@@ -301,8 +317,8 @@ Qed.
 (*Lemma red_out_eqC : red_out eqC.*)
 (*Proof.*)
  (*intros x u t' t T H. induction H.*)
- (*constructor 1.*)
- (*constructor 2 with (u := [x ~> u]u0); trivial. *)
+ (*apply one_step_reduction. apply red_out_pctx_eqc; trivial.*)
+ (*apply transitive_reduction with (u := [x ~> u]u0); trivial. *)
  (*apply red_out_pctx_eqc; trivial.*)
 (*Qed.*)
 
@@ -1746,4 +1762,3 @@ Proof.
 Qed.
 
 *)
-
