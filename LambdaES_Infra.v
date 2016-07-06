@@ -2105,6 +2105,15 @@ Lemma red_regular_ctx: forall (R : pterm -> pterm -> Prop),
   assumption. apply IHES_contextual_closure. 
 Qed.
 
+Lemma red_regular_trans: forall (R : pterm -> pterm -> Prop),
+  red_regular R -> red_regular (trans_closure R).
+Proof.
+  intros_all. induction H0.
+  apply H; assumption.
+  apply H in H0. split. apply H0.
+  apply IHtrans_closure.
+Qed.
+  
  (** flavio 2016/02/19
 Lemma SN_app : forall n R t u, red_regular R ->  
                SN_ind n (ES_contextual_closure R) (pterm_app t u) ->
