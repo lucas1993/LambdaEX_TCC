@@ -18,15 +18,15 @@ Qed.
 Inductive eqc : pterm -> pterm -> Prop := 
   | eqc_def: forall t u v, lc_at 2 t -> term u -> term v -> eqc (t[u][v]) ((& t)[v][u]).
 
-Lemma lc_at_bswap: forall t k, lc_at k t -> lc_at k (& t). 
+Lemma lc_at_bswap: forall t k, k <> 1 -> lc_at k t -> lc_at k (& t).
 Proof.
-  Admitted.
-  
+Admitted.  
+
 Lemma eqc_sym : forall t u, eqc t u -> eqc u t.
 Proof.
- intros t u H. inversion H; subst. 
+ intros_all. inversion H; subst. 
  replace t0 with (&(& t0)) at 2.
- apply eqc_def. apply lc_at_bswap; assumption.
+ apply eqc_def. apply lc_at_bswap. auto. assumption.
  assumption. assumption. apply bswap_idemp.
 Qed.
 
@@ -215,19 +215,37 @@ Qed.
 Definition eqc_trans (t u: pterm) := trans_closure eqc_ctx t u.
 Notation "t =c+ u" := (eqc_trans t u) (at level 66). 
 
-Definition eqc_trans_clos (t u: pterm) := trans_clos eqc_ctx t u.
-Notation "t =+ u" := (eqc_trans_clos t u) (at level 66). 
+Lemma red_regular_eqc_trans: red_regular eqc_trans.
+Proof.
+  unfold eqc_trans. apply red_regular_trans.
+  apply red_regular_eqc_ctx.
+Qed.
 
-Lemma eqc_trans_bvar : forall x t, (pterm_bvar x) =c+ t -> pterm_bvar x = t.
+Lemma red_out_eqc_trans : red_out eqc_trans.
+Proof.
+  intros_all. unfold eqc_trans in *. induction H0.
+  apply one_step_reduction. apply red_out_eqc_ctx; assumption.
+  apply transitive_reduction with ([x ~> u]u0); assumption.
+Qed.
+
+Lemma red_rename_eqc_trans: red_rename eqc_trans.
+Proof.
+  intros_all.
+  rewrite* (@subst_intro x t).
+  rewrite* (@subst_intro x t').
+  apply red_out_eqc_trans.
+  apply term_var. assumption.
+Qed.
+
+(* Lemma eqc_trans_bvar : forall x t, (pterm_bvar x) =c+ t -> pterm_bvar x = t.
 Proof.
   introv H.
   remember (pterm_bvar x) as t0.
   induction H. subst.
-  apply ESctx_eqc_bvar; assumption.
-  rewrite Heqt0 in H. rewrite Heqt0.
-  apply ESctx_eqc_bvar in H.
-  rewrite <- H in IHtrans_closure.
-  apply IHtrans_closure. reflexivity.
+  apply ESctx_eqc_bvar; assumption. subst.
+  apply eq_trans with u. apply IHtrans_closure1; reflexivity.
+  apply IHtrans_closure2.
+  apply ESctx_eqc_bvar in H0.
 Qed.
 
 Lemma eqc_trans_fvar : forall x t, (pterm_fvar x) =c+ t -> pterm_fvar x = t.
@@ -238,7 +256,7 @@ Proof.
   rewrite Heqt0 in *. apply ESctx_eqc_fvar in H.
   rewrite <- H in IHtrans_closure.
   apply IHtrans_closure; reflexivity.
-Qed.
+Qed. *)
 
 Lemma close_rec_fresh: forall x t k, x \notin fv(close_rec k x t).
 Proof.
@@ -282,12 +300,12 @@ Proof.
   gen_eq u:(t^x). gen_eq v:(t'^x). clear H.
   gen t t' x L. induction Red; intros; subst. 
   apply one_step_reduction. apply ES_abs_in with L.
-  intros. apply* (red_rename_eqc_ctx x); simpls*.
-  
+  intros. apply* (red_rename_eqc_ctx x); simpls*.  
   destruct~ (@close_spec u x).
-  apply red_regular_eqc_ctx in H. apply H.
-  destruct H0. subst. 
+  apply red_regular_eqc_trans in Red2. apply Red2.
+  destruct H. subst. 
   apply transitive_reduction with (pterm_abs x0).
+  apply IHRed1 with x (L \u fv t0 \u fv x0).
   apply ES_abs_in with L. intros.
   apply* (red_rename_eqc_ctx x); simpls*.
   apply IHRed with x L. assumption.
@@ -299,7 +317,13 @@ Proof.
   apply  notin_union in Fr. destruct Fr.
   assumption. reflexivity. reflexivity.
 Qed.
-      
+
+Lemma eqc_trans_sym: forall t t', t =c+ t' -> t' =c+ t.
+Proof.  
+  intros_all. induction H. apply one_step_reduction.
+  apply ESctx_eqc_sym; assumption.
+  apply transitive_reduction with u.
+  
 (** Este lema não vale com as novas definições. Verificar o que é realmente necessário. 
 Lemma eqc_trans_app_term : forall t u v, (pterm_app u v) =c+ t -> pterm_app u v = t.
 Proof. 
@@ -320,17 +344,20 @@ Notation "t =e u" := (eqC t u) (at level 66).
 
 (** =e is an equivalence relation *)
 
-Lemma eqC_rf : forall t, t =e t.
+Lemma eqC_rf : forall t, term t -> t =e t.
 Proof.
- intro t. apply reflexive_reduction.
+ intros_all. apply reflexive_reduction; assumption.
 Qed.
 
 Lemma eqC_sym : forall t u, t =e u -> u =e t.
 Proof.
  intros t u H. induction H.
  apply reflexive_reduction. induction H.
- apply ESctx_eqc_sym in H.
+ apply term_var. apply term_app; assumption.
+ apply term_abs with L; assumption.
+ apply term_sub with L; assumption.
  apply star_trans_reduction.
+ apply eqc_trans_sym. in H.
  apply one_step_reduction; assumption.
  apply ESctx_eqc_sym in H.
  apply star_trans_reduction.
@@ -354,10 +381,10 @@ Qed.
 
 Lemma red_out_eqC : red_out eqC.
 Proof.
- intros x u t' t T H. induction H.
- apply one_step_reduction. apply red_out_pctx_eqc; trivial.
- apply transitive_reduction with (u := [x ~> u]u0); trivial. 
- apply red_out_pctx_eqc; trivial.
+ intros x u t' t T H. gen x u. induction H. intros.
+ apply reflexive_reduction. intros.
+ apply star_trans_reduction.
+ apply red_out_eqc_trans; assumption.
 Qed.
 
 Lemma red_rename_eqC : red_rename eqC.
@@ -367,6 +394,11 @@ Proof.
  rewrite* (@subst_intro x t').
  apply red_out_eqC; trivial.
 Qed.
+
+Lemma red_regular_eqC : red_regular eqC.
+Proof.
+  intros_all. induction H.
+
 
 (** Verificar necessidade deste lema.
 Lemma eqc_sub_term :  forall t u t0, (t[u]) =e t0 -> 

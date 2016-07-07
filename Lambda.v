@@ -2,8 +2,8 @@
 * Formalization of lambda						                   *	
 *									                   *
 * Brian Aydemir & Arthur Chargu\u00e9raud, July 2007                             	   *
-* Fl\u00e1vio L. C. de Moura & Daniel L. Ventura, 2012                                     *
-* Fl\u00e1vio L. C. de Moura & Daniel L. Ventura & Washington R. Segundo, 2013       *
+* Flavio L. C. de Moura & Daniel L. Ventura, 2012                                          *
+* Flavio L. C. de Moura & Daniel L. Ventura & Washington R. Segundo, 2016                  *
 ********************************************************************************************)
 
 Set Implicit Arguments.
@@ -146,7 +146,8 @@ Lemma red_out_Lctx : forall (R : pterm -> pterm -> Prop),
   L_red_out R -> L_red_out (L_contextual_closure R).
 Proof.
  intros_all. induction H1.
- apply L_redex. apply H; trivial.
+ apply L_redex. apply subst_Lterm; assumption.
+ apply subst_Lterm; assumption. apply H; trivial.
  simpl. apply L_app_left; trivial.
  apply subst_Lterm; trivial.
  simpl. apply L_app_right; trivial.
@@ -315,32 +316,34 @@ Proof.
  intros. induction H0. apply one_step_reduction.
  apply L_app_left; trivial.
  apply transitive_reduction with (u := pterm_app u0 u); trivial.
- apply L_app_left; trivial. 
 Qed.
 
 Lemma str_Lctx_app_left : forall R t t' u, Lterm u ->
                        star_closure (L_contextual_closure R) t t' ->
                        star_closure (L_contextual_closure R) (pterm_app t u) (pterm_app t' u).
 Proof.
- intros. induction H0. apply reflexive_reduction. apply star_trans_reduction.
- apply trs_Lctx_app_left; trivial.
+  intros_all. induction H0. apply reflexive_reduction.
+  apply Lterm_is_term in H. apply term_app; assumption.
+  apply star_trans_reduction.
+  apply trs_Lctx_app_left; trivial.
 Qed.
 
 Lemma trs_Lctx_app_right : forall R t u u', Lterm t ->
                        trans_closure (L_contextual_closure R) u u' ->
                        trans_closure (L_contextual_closure R) (pterm_app t u) (pterm_app t u').
 Proof.
- intros. induction H0. apply one_step_reduction.
- apply L_app_right; trivial.
+  intros_all. induction H0. apply one_step_reduction.
+  apply L_app_right; trivial.
  apply transitive_reduction with (u := pterm_app t u); trivial.
- apply L_app_right; trivial. 
 Qed.
 
 Lemma str_Lctx_app_right : forall R t u u', Lterm t ->
                        star_closure (L_contextual_closure R) u u' ->
                        star_closure (L_contextual_closure R) (pterm_app t u) (pterm_app t u').
 Proof.
- intros. induction H0. apply reflexive_reduction. apply star_trans_reduction.
+  intros_all. induction H0. apply reflexive_reduction.
+  apply Lterm_is_term in H. apply term_app; assumption.
+  apply star_trans_reduction.
  apply trs_Lctx_app_right; trivial.
 Qed.
 
@@ -357,7 +360,7 @@ Proof.
  apply open_close_var. apply red_regular_Lctx in H0. apply H0 in H2. apply Lterm_is_term. apply H2.
 Qed.
 
-Lemma trs_Lctx_abs_in : forall R L t t', L_red_regular R -> L_red_out R -> 
+(* Lemma trs_Lctx_abs_in : forall R L t t', L_red_regular R -> L_red_out R -> 
                        (forall x, x \notin L ->  trans_closure (L_contextual_closure R) (t ^ x) (t' ^ x)) -> trans_closure (L_contextual_closure R) (pterm_abs t) (pterm_abs t').
 Proof.
  intros R L t t' H0 H1 H2.  case var_fresh with (L := L \u (fv t) \u (fv t')). intros x Fr.
@@ -370,9 +373,9 @@ Proof.
  apply Lctx_abs_in_close with (L := L); trivial.
  rewrite Ht0. rewrite <- close_open_term; trivial. 
  rewrite Ht1. rewrite <- close_open_term; trivial.
-Qed.
+Qed.*)
 
-Lemma str_Lctx_abs_in : forall R L t t', L_red_regular R -> L_red_out R -> 
+(*Lemma str_Lctx_abs_in : forall R L t t', L_red_regular R -> L_red_out R -> 
                        (forall x, x \notin L ->  star_closure (L_contextual_closure R) (t ^ x) (t' ^ x)) -> star_closure (L_contextual_closure R) (pterm_abs t) (pterm_abs t').
 Proof.
  intros R L t t' H0 H1 H2.  case var_fresh with (L := L \u (fv t) \u (fv t')). intros x Fr.
@@ -380,16 +383,15 @@ Proof.
  assert (Q: star_closure (L_contextual_closure R) (t ^ x) (t' ^ x)). apply H2; trivial. clear H2.
  gen_eq t0 : (t ^ x). gen_eq t1 : (t' ^ x). intros Ht0 Ht1.
  replace t with (close t0 x). replace t' with (close t1 x). clear Ht0 Ht1. induction Q.
- apply reflexive_reduction. apply star_trans_reduction. induction H2.
+ apply reflexive_reduction.
+ apply star_trans_reduction. induction H2.
  apply one_step_reduction. apply Lctx_abs_in_close with (L := L); trivial.
  apply transitive_reduction with (u := pterm_abs (close u x)); trivial.
  apply Lctx_abs_in_close with (L := L); trivial.
  rewrite Ht0. rewrite <- close_open_term; trivial. 
  rewrite Ht1. rewrite <- close_open_term; trivial.
 Qed.
-
-
-(******)
+*)
 
 
 
@@ -418,21 +420,21 @@ Proof.
    intros; apply str_Lctx_app_right; trivial. 
 Qed.
 
-Lemma in_trans_abs_Beta: forall L u v,  (forall x, x \notin L -> (u ^ x) -->Beta+ (v ^ x)) -> 
+(* Lemma in_trans_abs_Beta: forall L u v,  (forall x, x \notin L -> (u ^ x) -->Beta+ (v ^ x)) -> 
   ((pterm_abs u) -->Beta+ (pterm_abs v)).
 Proof.
  intros; apply trs_Lctx_abs_in with (L := L); trivial.
  apply L_beta_regular.
  apply L_beta_red_out.
-Qed.
+Qed. *)
 
-Lemma in_star_abs_Beta: forall L u v,  (forall x, x \notin L -> (u ^ x) -->Beta* (v ^ x)) -> 
+(*Lemma in_star_abs_Beta: forall L u v,  (forall x, x \notin L -> (u ^ x) -->Beta* (v ^ x)) -> 
   ((pterm_abs u) -->Beta* (pterm_abs v)).
 Proof.
  intros; apply str_Lctx_abs_in with (L := L); trivial.
  apply L_beta_regular.
  apply L_beta_red_out.
-Qed.
+Qed.*)
 
 (** Induction Principles *)
 
@@ -723,7 +725,7 @@ Proof.
 Qed.
 
 
-(** Inductive Characterisation of NF Beta **)
+(** Inductive Characterisation of NF Beta 
 
 Lemma NF_ind_eq_Beta : forall t, Lterm t -> (NF_ind Beta t <-> NF Beta t).
 Proof.
@@ -768,7 +770,7 @@ Proof.
  apply L_redex. apply reg_rule_beta; trivial. unfold body. unfold Lbody in H1.
  case H1; clear H1; intros L H1. apply H0. rewrite H5.
  apply in_or_app. right. simpl. left; trivial.
-Qed.
+Qed.*)
 
 
 (** Inductive Characterisation of SN Beta **)
@@ -797,7 +799,7 @@ Qed.
                     SN_Beta ((pterm_app (pterm_abs t)  u) // lv)
 .  
 
-Theorem SN_Beta_prop : forall t, Lterm t -> SN Beta t -> SN_Beta t.
+(* Theorem SN_Beta_prop : forall t, Lterm t -> SN Beta t -> SN_Beta t.
 Proof.
  intros t T. 
 
@@ -847,5 +849,5 @@ Proof.
  apply Lctx_red_h_mult_app; trivial. apply L_redex. apply reg_rule_beta.
  unfold Lbody in H0. case H0; clear H0; intros L H0. exists L. intros.
  apply H0; trivial. trivial.
-Qed.
+Qed. *)
 
