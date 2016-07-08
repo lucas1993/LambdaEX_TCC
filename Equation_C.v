@@ -52,12 +52,12 @@ Qed.
 
 Lemma eqc_regular: red_regular eqc.
 Proof.
-  unfold red_regular. intros t t' H. split.
-  inversion H; subst.
+  unfold red_regular. intros_all. split.
+  inversion H; subst. clear H.
   apply term_sub with (fv t0 \u fv u).
-  intros. unfold open. simpl.
+  intros_all. unfold open. simpl.
   apply term_sub with (fv t0 \u {{x}}).
-  intros. apply term'_to_term. unfold term'.
+  intros_all. apply term'_to_term. unfold term'.
   apply lc_at_open; trivial.
   apply lc_at_open; trivial.
   apply term'_to_term.
@@ -65,20 +65,18 @@ Proof.
   apply term_to_term' in H1. unfold term' in H1.
   apply lc_at_weaken_ind with 0. assumption. auto. assumption.
 
-  inversion H; subst.
+  inversion H; subst. clear H.
   apply term_sub with (fv t0 \u fv u).
-  intros. unfold open. simpl.
+  intros_all. unfold open. simpl.
   apply term_sub with (fv t0 \u {{x}}).
-  intros. apply term'_to_term. unfold term'.
+  intros_all. apply term'_to_term. unfold term'.
   apply lc_at_open; trivial.
-  apply lc_at_open; trivial.
-  apply lc_at_bswap. assumption.
+  apply lc_at_open; trivial.  
+  apply lc_at_bswap. auto. assumption.
   apply term'_to_term.
   apply lc_at_open; trivial.
-  apply term_to_term' in H1. unfold term' in H1.
-  apply lc_at_weaken_ind with 0.
-  apply term_to_term' in H2. unfold term' in  H2; assumption.
-  auto. assumption.
+  apply term_to_term' in H2. unfold term' in H2.
+  apply lc_at_weaken_ind with 0. assumption. auto. assumption.
 Qed.
     
 Definition eqc_ctx (t u: pterm) := ES_contextual_closure eqc t u.
@@ -300,20 +298,23 @@ Proof.
   gen_eq u:(t^x). gen_eq v:(t'^x). clear H.
   gen t t' x L. induction Red; intros; subst. 
   apply one_step_reduction. apply ES_abs_in with L.
-  intros. apply* (red_rename_eqc_ctx x); simpls*.  
+  intros_all. apply* (red_rename_eqc_ctx x); simpls*.  
   destruct~ (@close_spec u x).
   apply red_regular_eqc_trans in Red2. apply Red2.
   destruct H. subst. 
   apply transitive_reduction with (pterm_abs x0).
-  apply IHRed1 with x (L \u fv t0 \u fv x0).
-  apply ES_abs_in with L. intros.
-  apply* (red_rename_eqc_ctx x); simpls*.
-  apply IHRed with x L. assumption.
+  apply IHRed1 with x L.
+  apply term_abs with (fv x0). intros_all.
+  destruct H0. apply body_to_term; assumption.
+  apply notin_union. split. apply notin_union in Fr.
+  destruct Fr. assumption. destruct H0. assumption.
+  reflexivity. reflexivity.
+  apply IHRed2 with x L. assumption. 
   apply notin_union. split.
   apply notin_union. split.
   apply  notin_union in Fr. destruct Fr.
-  apply  notin_union in H0. destruct H0.
-  assumption. destruct H1. assumption.
+  apply  notin_union in H. destruct H.
+  assumption. destruct H0. assumption.
   apply  notin_union in Fr. destruct Fr.
   assumption. reflexivity. reflexivity.
 Qed.
@@ -322,8 +323,9 @@ Lemma eqc_trans_sym: forall t t', t =c+ t' -> t' =c+ t.
 Proof.  
   intros_all. induction H. apply one_step_reduction.
   apply ESctx_eqc_sym; assumption.
-  apply transitive_reduction with u.
-  
+  apply transitive_reduction with u; assumption.
+Qed.  
+
 (** Este lema não vale com as novas definições. Verificar o que é realmente necessário. 
 Lemma eqc_trans_app_term : forall t u v, (pterm_app u v) =c+ t -> pterm_app u v = t.
 Proof. 
@@ -357,14 +359,7 @@ Proof.
  apply term_abs with L; assumption.
  apply term_sub with L; assumption.
  apply star_trans_reduction.
- apply eqc_trans_sym. in H.
- apply one_step_reduction; assumption.
- apply ESctx_eqc_sym in H.
- apply star_trans_reduction.
- inversion IHtrans_closure; subst.
- apply one_step_reduction; assumption.
- apply transitive_closure_composition with u. assumption.
- apply one_step_reduction; assumption.
+ apply eqc_trans_sym. assumption.
 Qed.
 
 Lemma eqC_trans : forall t u v, t =e u -> u =e v -> t =e v.
