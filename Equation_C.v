@@ -346,9 +346,9 @@ Notation "t =e u" := (eqC t u) (at level 66).
 
 (** =e is an equivalence relation *)
 
-Lemma eqC_rf : forall t, term t -> t =e t.
+Lemma eqC_rf : forall t, t =e t.
 Proof.
- intros_all. apply reflexive_reduction; assumption.
+ intros_all. apply reflexive_reduction. assumption.
 Qed.
 
 Lemma eqC_sym : forall t u, t =e u -> u =e t.

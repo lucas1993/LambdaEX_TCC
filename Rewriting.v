@@ -92,7 +92,7 @@ Inductive trans_closure (Red : pterm -> pterm -> Prop) : pterm -> pterm -> Prop 
 
 (** Given a relation Red, constructs its transitive reflexive closure *)
 Inductive star_closure (Red : pterm -> pterm -> Prop) : pterm -> pterm -> Prop :=
-  | reflexive_reduction : forall t, term t -> star_closure Red t t
+  | reflexive_reduction : forall t, star_closure Red t t
   | star_trans_reduction : forall t u, trans_closure Red t u -> star_closure Red t u.
 
 (** Given a reduction, the composition of two star closure is still a star closure 

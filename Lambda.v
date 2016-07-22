@@ -318,7 +318,7 @@ Proof.
  apply transitive_reduction with (u := pterm_app u0 u); trivial.
 Qed.
 
-Lemma str_Lctx_app_left : forall R t t' u, Lterm u ->
+(*Lemma str_Lctx_app_left : forall R t t' u, Lterm u ->
                        star_closure (L_contextual_closure R) t t' ->
                        star_closure (L_contextual_closure R) (pterm_app t u) (pterm_app t' u).
 Proof.
@@ -326,7 +326,7 @@ Proof.
   apply Lterm_is_term in H. apply term_app; assumption.
   apply star_trans_reduction.
   apply trs_Lctx_app_left; trivial.
-Qed.
+Qed.*)
 
 Lemma trs_Lctx_app_right : forall R t u u', Lterm t ->
                        trans_closure (L_contextual_closure R) u u' ->
@@ -337,7 +337,7 @@ Proof.
  apply transitive_reduction with (u := pterm_app t u); trivial.
 Qed.
 
-Lemma str_Lctx_app_right : forall R t u u', Lterm t ->
+(*Lemma str_Lctx_app_right : forall R t u u', Lterm t ->
                        star_closure (L_contextual_closure R) u u' ->
                        star_closure (L_contextual_closure R) (pterm_app t u) (pterm_app t u').
 Proof.
@@ -345,7 +345,7 @@ Proof.
   apply Lterm_is_term in H. apply term_app; assumption.
   apply star_trans_reduction.
  apply trs_Lctx_app_right; trivial.
-Qed.
+Qed.*)
 
 Lemma Lctx_abs_in_close : forall x R L t t', L_red_regular R -> L_red_out R ->
                          L_contextual_closure R t t' -> x \notin L ->
@@ -402,11 +402,11 @@ Proof.
   apply trs_Lctx_app_left; assumption.
 Qed.
 
-Lemma left_star_app_Beta: forall t u v,  Lterm t  ->   
+(*Lemma left_star_app_Beta: forall t u v,  Lterm t  ->   
       u -->Beta* v -> pterm_app u t -->Beta* pterm_app v t.
 Proof.
   intros; apply str_Lctx_app_left; trivial. 
-Qed.
+Qed.*)
   
 Lemma right_trans_app_Beta: forall t u v,  Lterm t  ->   
       u -->Beta+ v -> pterm_app t u -->Beta+ pterm_app t v.
@@ -414,11 +414,11 @@ Proof.
    intros; apply trs_Lctx_app_right; trivial. 
 Qed.
 
-Lemma right_star_app_Beta: forall t u v,  Lterm t  ->   
+(* Lemma right_star_app_Beta: forall t u v,  Lterm t  ->   
       u -->Beta* v -> pterm_app t u -->Beta* pterm_app t v.
 Proof.
    intros; apply str_Lctx_app_right; trivial. 
-Qed.
+Qed.*)
 
 (* Lemma in_trans_abs_Beta: forall L u v,  (forall x, x \notin L -> (u ^ x) -->Beta+ (v ^ x)) -> 
   ((pterm_abs u) -->Beta+ (pterm_abs v)).
