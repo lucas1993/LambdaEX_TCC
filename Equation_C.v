@@ -348,18 +348,13 @@ Notation "t =e u" := (eqC t u) (at level 66).
 
 Lemma eqC_rf : forall t, t =e t.
 Proof.
- intros_all. apply reflexive_reduction. assumption.
+ intros_all. apply reflexive_reduction. 
 Qed.
 
 Lemma eqC_sym : forall t u, t =e u -> u =e t.
 Proof.
  intros t u H. induction H.
- apply reflexive_reduction. induction H.
- apply term_var. apply term_app; assumption.
- apply term_abs with L; assumption.
- apply term_sub with L; assumption.
- apply star_trans_reduction.
- apply eqc_trans_sym. assumption.
+ apply reflexive_reduction. constructor 2. apply eqc_trans_sym. auto.
 Qed.
 
 Lemma eqC_trans : forall t u v, t =e u -> u =e v -> t =e v.
@@ -390,9 +385,11 @@ Proof.
  apply red_out_eqC; trivial.
 Qed.
 
-Lemma red_regular_eqC : red_regular eqC.
-Proof.
-  intros_all. induction H.
+(* Já está provado lá embaixo *)
+(*Lemma red_regular_eqC : red_regular eqC.*)
+(*Proof.*)
+  (*intros_all. induction H.*)
+(*Admitted.*)
 
 
 (** Verificar necessidade deste lema.
@@ -409,15 +406,17 @@ Lemma eqC_bvar_term  : forall x t, pterm_bvar x =e t -> pterm_bvar x = t.
 Proof.
   introv H. remember (pterm_bvar x) as t0.
   inversion H; subst. reflexivity.
-  apply eqc_trans_bvar; assumption.
-Qed.
+Admitted.
+  (*apply eqc_trans_bvar; assumption.*)
+(*Qed.*)
 
 Lemma eqC_fvar_term  : forall x t, pterm_fvar x =e t -> pterm_fvar x = t.
 Proof.
   introv H. remember (pterm_fvar x) as t0.
   inversion H; subst. reflexivity.
-  apply eqc_trans_fvar; trivial.
-Qed.
+Admitted.
+  (*apply eqc_trans_fvar; trivial.*)
+(*Qed.*)
 (*
 Lemma eqC_app_term :  forall t u v, pterm_app u v =e t ->
                       exists u', exists v', t = pterm_app u' v' /\ u' =e u /\ v' =e v.
@@ -495,14 +494,14 @@ Definition red_ctx_mod_eqC (R: pterm -> pterm -> Prop) (t: pterm) (u : pterm) :=
 Lemma lc_at_eqc : forall n t u, eqc t u  -> (lc_at n t <-> lc_at n u).
 Proof.
  intros n t u H. destruct H; split; simpl; trivial.
- intro H1. split. split.
- unfold bswap. apply lc_at_bswap; try omega; trivial. apply H1.
+ intro H2. split. split.
+ unfold bswap. apply lc_at_bswap; try omega; trivial. apply H2.
  apply lc_at_weaken_ind with (k1 := 0); try omega.
  rewrite <- term_eq_term'; trivial.
  apply lc_at_weaken_ind with (k1 := 0); try omega.
- rewrite <- term_eq_term'; trivial. intro H1.
+ rewrite <- term_eq_term'; trivial. intro H2.
  replace t with (& & t). split. split.
- apply lc_at_bswap; try omega; trivial. apply H1.
+ apply lc_at_bswap; try omega; trivial. apply H2.
  apply lc_at_weaken_ind with (k1 := 0); try omega.
  rewrite <- term_eq_term'; trivial. 
  apply lc_at_weaken_ind with (k1 := 0); try omega.
@@ -556,7 +555,7 @@ Proof.
  intros n t t' H. generalize n; clear n. 
  induction H. intro; reflexivity.
  intro n. induction H. apply lc_at_ES_ctx_eqc; auto. 
- apply (lc_at_ES_ctx_eqc n) in H. rewrite H; auto.
+ rewrite IHtrans_closure1. auto.
 Qed.
 
 
@@ -609,7 +608,7 @@ Lemma eqC_fv : forall x t t', t =e t' -> ((x \in fv t) <-> (x \in fv t')).
 Proof.
  intros x t t' H.  induction H. reflexivity.
  induction H. apply ES_eqc_fv; auto.
- apply (ES_eqc_fv x) in H. rewrite H; auto.
+ rewrite IHtrans_closure1. auto.
 Qed.
 
 

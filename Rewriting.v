@@ -107,14 +107,14 @@ Proof.
  apply star_trans_reduction.
  apply transitive_reduction with (u := t0); trivial.
 Qed.
-
+*)
 Lemma transitive_closure_composition : 
     forall Red t u v, trans_closure Red t u -> trans_closure Red u v -> trans_closure Red t v.
 Proof.
   intros_all. induction H.
-  apply transitive_reduction with (u := u); trivial.
+  apply transitive_reduction with (u := u); trivial. constructor 1; auto.
   apply transitive_reduction with (u := u) ; auto.
-Qed.*)
+Qed.
 
 Lemma star_transitive_closure_composition_1 :
     forall Red t u v, trans_closure Red t u -> star_closure Red u v -> star_closure Red t v.

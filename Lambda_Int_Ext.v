@@ -142,7 +142,7 @@ Proof.
     constructor 2.
     induction H0.
     constructor. constructor 2; auto.
-    constructor 2 with (pterm_app u0 u). constructor 2; auto. auto.
+    constructor 2 with (pterm_app u0 u); auto. 
 Qed.
 
 Lemma star_lab_closure_app_right: forall R t t' u, lab_term u -> star_closure (lab_contextual_closure R) t t' -> star_closure (lab_contextual_closure R) (pterm_app u t) (pterm_app u t').
@@ -153,7 +153,7 @@ Proof.
     constructor 2.
     induction H0.
     constructor. constructor 3; auto.
-    constructor 2 with (pterm_app u u0). constructor 3; auto. auto.
+    constructor 2 with (pterm_app u u0); auto.
 Qed.
 
 Lemma pterm_abs_EE_inversion: forall t v, (pterm_abs t) =EE v -> exists t', v = (pterm_abs t') /\ (t =EE t').
