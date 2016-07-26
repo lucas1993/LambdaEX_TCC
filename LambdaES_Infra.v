@@ -3,8 +3,8 @@
 *									   *
 * Infrastructure for explicit substitutions, not specific to a calculus    *
 *									   *
-* Arthur Chargu\u00e9raud, 2007						   *
-* Fabien Renaud & St\u00e9phane Zimmerman, 2011				   *
+* Arthur Chargueraud, 2007						   *
+* Fabien Renaud & Stephane Zimmerman, 2011				   *
 * Flávio L. C. de Moura, 2016                                              *
 ***************************************************************************)
 
@@ -883,17 +883,17 @@ Proof.
  apply H'.
 Qed.
 
-Lemma SN_trs : forall n R t u, trans_closure R t u -> 
+(*Lemma SN_trs : forall n R t u, trans_closure R t u -> 
                                SN_ind n R t -> (exists k, k < n /\ SN_ind k R u).
 Proof.
- intros. generalize n H0; clear n H0.
+ intros_all. generalize n H0; clear n H0.
  induction H; intros. destruct n. apply False_ind. apply SN0_to_NF in H0. 
  apply (H0 u); trivial. apply SN_one_step with (u := u) in H0; trivial. 
  exists n. split; try omega; trivial.
  destruct H1. case (H1 u); trivial; clear H1. intros n' H1. destruct H1.
  case IHtrans_closure with (n := n'); trivial. intros k' H3. destruct H3.
  exists k'. split; try omega; trivial.
-Qed.
+Qed.*)
 
 (*** about SN and NF in lists *)
 
@@ -2103,6 +2103,14 @@ Lemma red_regular_ctx: forall (R : pterm -> pterm -> Prop),
   split; apply body_to_subs; apply term_is_a_body in H1.
   assumption. apply IHES_contextual_closure. 
   assumption. apply IHES_contextual_closure. 
+Qed.
+
+Lemma red_regular_trans: forall (R : pterm -> pterm -> Prop),
+  red_regular R -> red_regular (trans_closure R).
+Proof.
+  intros_all. induction H0.
+  apply H; assumption. split.
+  apply IHtrans_closure1. apply IHtrans_closure2.
 Qed.
 
  (** flavio 2016/02/19
