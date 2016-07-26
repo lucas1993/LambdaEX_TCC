@@ -348,6 +348,8 @@ Qed.
 Definition eqcc t t' := eqc t t' \/ lab_eqc t t'.
 Notation "t =ee t'" := (eqcc t t') (at level 66).
 
+Definition star_ctx_eqcc (t: pterm) (u : pterm) :=  star_closure (lab_contextual_closure lab_eqc) t u . 
+Notation "t =EE u" := (star_ctx_eqcc t u) (at level 66).
 
 
 (** TBD:regularity and contextual lemmas are missing. *)
@@ -384,7 +386,7 @@ Definition lab_ex (t: pterm) (u : pterm) :=
     exists t' u', (t =~e t')/\(lab_contextual_closure lab_sys_x t' u')/\(u' =~e u).
 
 Definition lab_lex (t: pterm) (u : pterm) := 
-    exists t' u', (t =ee t')/\(lab_contextual_closure lab_sys_lx t' u')/\(u' =ee u).
+    exists t' u', (t =EE t')/\(lab_contextual_closure lab_sys_lx t' u')/\(u' =EE u).
 
 Notation "t -->[ex] u" := (lab_ex t u) (at level 59, left associativity).
 Notation "t -->[lex] u" := (lab_lex t u) (at level 59, left associativity).

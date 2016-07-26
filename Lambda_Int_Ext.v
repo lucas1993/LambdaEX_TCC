@@ -62,15 +62,15 @@ Inductive lab_x_i: pterm -> pterm -> Prop :=
                 lab_x_i t t'. 
 
 Definition lab_x_i_eq (t: pterm) (u : pterm) := 
-    exists t' u', (t =ee t')/\(ext_lab_contextual_closure lab_x_i t' u')/\(u' =ee u).
+    exists t' u', (t =EE t')/\(ext_lab_contextual_closure lab_x_i t' u')/\(u' =EE u).
 
 Definition lab_x_e_eq (t: pterm) (u : pterm) := 
-    exists t' u', (t =ee t')/\((ext_lab_contextual_closure sys_Bx) t' u')/\(u' =ee u).
+    exists t' u', (t =EE t')/\((ext_lab_contextual_closure sys_Bx) t' u')/\(u' =EE u).
 
 Notation "t -->[lx_i] u" := (lab_x_i_eq t u) (at level 59, left associativity).
 Notation "t -->[lx_e] u" := (lab_x_e_eq t u) (at level 59, left associativity).
 
-Lemma lab_sys_x_i_e: forall t t' x x', lab_term t -> (x =ee t) -> (t' =ee x') -> lab_sys_lx t t' -> (x -->[lx_i] x' \/ x -->[lx_e] x').
+Lemma lab_sys_x_i_e: forall t t' x x', lab_term t -> (x =EE t) -> (t' =EE x') -> lab_sys_lx t t' -> (x -->[lx_i] x' \/ x -->[lx_e] x').
 Proof.
     intros.
     induction H2.  
@@ -79,15 +79,15 @@ Proof.
     constructor 1. exists t u. split*. split. constructor 1. auto. constructor 2. auto. auto. auto.
 Qed.
 
-Lemma lab_x_i_sys_lx: forall t t', lab_x_i t t' -> lab_sys_lx t t'.
-Proof.
-    intros.
-    induction H.
-    destruct H0.  destruct H0.
-    destruct H0.
-    destruct H1.
-    induction H1.
-Qed.
+(*Lemma lab_x_i_sys_lx: forall t t', lab_x_i t t' -> lab_sys_lx t t'.*)
+(*Proof.*)
+    (*intros.*)
+    (*induction H.*)
+    (*destruct H0.  destruct H0.*)
+    (*destruct H0.*)
+    (*destruct H1.*)
+    (*induction H1.*)
+(*Qed.*)
 
 Lemma eqcc_lab_term: forall t t', lab_term t -> t =ee t' -> lab_term t'.
 Proof.
@@ -122,6 +122,52 @@ Proof.
     admit. 
 Qed.
 
+Lemma star_ctx_eqcc_sym: forall t u, t =EE u -> u =EE t.
+Proof.
+    Admitted.
+
+Lemma star_ctx_eqcc_lab_term: forall t t', lab_term t -> t =EE t' -> lab_term t'.
+Proof.
+    Admitted.
+
+Lemma pterm_app_EE_inversion: forall t u v, (pterm_app t u) =EE v -> exists t' u', v = (pterm_app t' u') /\ (t =EE t') /\ (u =EE u').
+Proof.
+    Admitted.
+
+Lemma star_lab_closure_app_left: forall R t t' u, lab_term u -> star_closure (lab_contextual_closure R) t t' -> star_closure (lab_contextual_closure R) (pterm_app t u) (pterm_app t' u).
+Proof.
+    intros.
+    induction H0.
+    constructor.
+    constructor 2.
+    induction H0.
+    constructor. constructor 2; auto.
+    constructor 2 with (pterm_app u0 u). constructor 2; auto. auto.
+Qed.
+
+Lemma star_lab_closure_app_right: forall R t t' u, lab_term u -> star_closure (lab_contextual_closure R) t t' -> star_closure (lab_contextual_closure R) (pterm_app u t) (pterm_app u t').
+Proof.
+    intros.
+    induction H0.
+    constructor.
+    constructor 2.
+    induction H0.
+    constructor. constructor 3; auto.
+    constructor 2 with (pterm_app u u0). constructor 3; auto. auto.
+Qed.
+
+Lemma pterm_abs_EE_inversion: forall t v, (pterm_abs t) =EE v -> exists t', v = (pterm_abs t') /\ (t =EE t').
+Proof.
+    Admitted.
+
+Lemma lx_i_open_abs: forall x x0 L, (forall y : VarSet.elt, y \notin L -> x0 ^ y-->[lx_i]x ^ y) -> pterm_abs x0-->[lx_i]pterm_abs x.
+Proof.
+    Admitted.
+
+Lemma term_EE_open: forall t t' x, t =EE t' -> (t ^ x) =EE (t' ^ x).
+Proof.
+    Admitted.
+
 Lemma lab_ex_eq_i_e: forall t t', lab_term t -> (t -->[lex] t' <-> (t -->[lx_i] t' \/ t -->[lx_e] t')).
 Proof.
     split.
@@ -131,17 +177,105 @@ Proof.
     generalize dependent t'.
     induction H1; intros.
 
-    apply lab_sys_x_i_e with t s; auto. apply eqcc_lab_term with t0; auto*.
-    inversion H2; subst. inversion H4; subst. inversion H4; subst.
-    inversion H2; subst. inversion H4; subst. inversion H4; subst.
-    inversion H2; subst. inversion H4; subst. inversion H4; subst.
+    (* Base *)
+    apply lab_sys_x_i_e with t s; auto. apply star_ctx_eqcc_lab_term with t0; auto*.
 
-    Focus 5.
-    intros. destruct H0; destruct H0; destruct H0; destruct H0; destruct H1; induction H1.
-    exists t0 s. split*. split*. constructor 1; auto. constructor.
-    exists (t1 [[t2]]) (t1 [[t2']]). split*. split. constructor 8. inversion H1. 
-    exists L; auto. inversion H1; auto.  inversion H3. constructor 1; auto.
-    constructor 2; auto. auto. 
+    (* app left *)
+    assert (H4 := pterm_app_EE_inversion H2).
+    apply star_ctx_eqcc_sym in H3.
+    assert (H5 := pterm_app_EE_inversion H3).
+    destruct H4.  destruct H4.  destruct H4.  destruct H6.  
+    destruct H5.  destruct H5.  destruct H5.  destruct H8.
+    subst. inversion H0; subst.  apply star_ctx_eqcc_sym in H8.
+    assert (x1-->[lx_i]x \/ x1-->[lx_e]x).  apply IHlab_contextual_closure; auto.
+    destruct H4. left. 
+    destruct H4. destruct H4. destruct H4. destruct H5.
+    exists (pterm_app x3 u) (pterm_app x4 u).
+    split. apply star_closure_composition with (pterm_app x1 u).
+    apply star_lab_closure_app_right. auto. apply star_ctx_eqcc_sym in H9. auto.
+    apply star_lab_closure_app_left. auto. auto.
+    split. constructor 2; auto. apply star_closure_composition with (pterm_app x u).
+    apply star_lab_closure_app_left; auto. apply star_lab_closure_app_right; auto.
+    admit.
+    right.
+    destruct H4. destruct H4. destruct H4. destruct H5.
+    exists (pterm_app x3 u) (pterm_app x4 u).
+    split. apply star_closure_composition with (pterm_app x1 u).
+    apply star_lab_closure_app_right. auto. apply star_ctx_eqcc_sym in H9. auto.
+    apply star_lab_closure_app_left. auto. auto.
+    split. constructor 2; auto. apply star_closure_composition with (pterm_app x u).
+    apply star_lab_closure_app_left; auto. apply star_lab_closure_app_right; auto.
+    admit.
+
+    (* app right *)
+    assert (H4 := pterm_app_EE_inversion H2).
+    apply star_ctx_eqcc_sym in H3.
+    assert (H5 := pterm_app_EE_inversion H3).
+    destruct H4.  destruct H4.  destruct H4.  destruct H6.  
+    destruct H5.  destruct H5.  destruct H5.  destruct H8.
+    subst. inversion H0; subst.  apply star_ctx_eqcc_sym in H9.
+    assert (x2-->[lx_i]x0 \/ x2-->[lx_e]x0).  apply IHlab_contextual_closure; auto.
+    destruct H4. left. 
+    destruct H4. destruct H4. destruct H4. destruct H5.
+    exists (pterm_app t x3) (pterm_app t x4).
+    split. apply star_closure_composition with (pterm_app x1 x3).
+    apply star_lab_closure_app_right. auto.  auto.
+    apply star_lab_closure_app_left. admit. apply star_ctx_eqcc_sym in H8. auto. 
+    split. constructor 3; auto. apply star_closure_composition with (pterm_app x x4).
+    apply star_lab_closure_app_left; auto. admit. apply star_lab_closure_app_right; auto.
+    admit.
+    right.
+    destruct H4. destruct H4. destruct H4. destruct H5.
+    exists (pterm_app t x3) (pterm_app t x4).
+    split. apply star_closure_composition with (pterm_app x1 x3).
+    apply star_lab_closure_app_right. auto.  auto.
+    apply star_lab_closure_app_left. admit. apply star_ctx_eqcc_sym in H8. auto. 
+    split. constructor 3; auto. apply star_closure_composition with (pterm_app x x4).
+    apply star_lab_closure_app_left; auto. admit. apply star_lab_closure_app_right; auto.
+    admit.
+
+    (* abs *)
+    assert (H4 := pterm_abs_EE_inversion H2).
+    apply star_ctx_eqcc_sym in H3.
+    assert (H5 := pterm_abs_EE_inversion H3).
+    destruct H4.  destruct H4. 
+    destruct H5.  destruct H5. 
+    subst. inversion H1; subst. 
+    (*assert (forall y, y \notin (L \u L0) -> x0 ^ y -->[lx_i] x ^ y ).*)
+    (*intros.*)
+    (*apply term_EE_open with t' x y in H6.*)
+    (*apply term_EE_open with t x0 y in H7.*)
+    (*apply notin_union in H4. destruct H4.*)
+    (*pose proof (H5 y H8); auto.*)
+    (*apply star_ctx_eqcc_sym in H7.*)
+    (*pose proof (H0 y H4 (x ^ y) H6 (x0 ^ y) H9 H7). admit.*)
+    (*left. *)
+    assert (forall y, y \notin (L \u L0) -> x0 ^ y -->[lx_i] x ^ y \/  x0 ^ y -->[lx_e] x ^ y ).
+    intros.
+    apply term_EE_open with t' x y in H6.
+    apply term_EE_open with t x0 y in H7.
+    apply notin_union in H4. destruct H4.
+    pose proof (H5 y H8); auto.
+    apply star_ctx_eqcc_sym in H7.
+    pose proof (H0 y H4 (x ^ y) H6 (x0 ^ y) H9 H7). auto.
+    (*assert ((forall y : VarSet.elt, y \notin L \u L0 -> x0 ^ y-->[lx_i]x ^ y) \/ (forall y : VarSet.elt, y \notin L \u L0 -> x0 ^ y-->[lx_e]x ^ y)). admit.*)
+    (*destruct H8. left. apply lx_i_open_abs with (L \u L0). auto.*)
+    (*exists (pterm_abs x0) (pterm_abs x). *)
+    (*split. constructor 1. split. constructor 4 with (L \u L0). intros. *)
+    (*pose proof ( H8 x1 H9 ). destruct H10. destruct H10.*)
+
+
+    (*inversion H2; subst. inversion H4; subst. inversion H4; subst.*)
+    (*inversion H2; subst. inversion H4; subst. inversion H4; subst.*)
+    (*inversion H2; subst. inversion H4; subst. inversion H4; subst.*)
+    (*inversion H2; subst. inversion H5; subst.*)
+
+    (*Focus 7.*)
+    (*intros. destruct H0; destruct H0; destruct H0; destruct H0; destruct H1; induction H1.*)
+    (*exists t0 s. split*. split*. constructor 1; auto. constructor.*)
+    (*exists (t1 [[t2]]) (t1 [[t2']]). split*. split. constructor 8. inversion H1. *)
+    (*exists L; auto. inversion H1; auto.  inversion H3. constructor 1; auto.*)
+    (*constructor 2; auto. auto. *)
 
 
 
