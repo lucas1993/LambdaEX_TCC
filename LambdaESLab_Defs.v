@@ -348,7 +348,7 @@ Qed.
 Definition eqcc t t' := eqc t t' \/ lab_eqc t t'.
 Notation "t =ee t'" := (eqcc t t') (at level 66).
 
-Definition star_ctx_eqcc (t: pterm) (u : pterm) :=  star_closure (lab_contextual_closure lab_eqc) t u . 
+Definition star_ctx_eqcc (t: pterm) (u : pterm) :=  star_closure (lab_contextual_closure eqcc) t u . 
 Notation "t =EE u" := (star_ctx_eqcc t u) (at level 66).
 
 
