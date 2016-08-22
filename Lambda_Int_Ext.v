@@ -176,7 +176,25 @@ Proof.
 
 Qed.
 
+Lemma EE_clos_abs: forall R x x0 L, (forall y : VarSet.elt, y \notin L -> (lab_EE_ctx_red R) (x0 ^ y) (x ^ y)) -> (lab_EE_ctx_red R) (pterm_abs x0) (pterm_abs x).
+Proof.
+    Admitted.
 
+Lemma EE_clos_outer_sub: forall R t t' u L, (forall y : VarSet.elt, y \notin L -> (lab_EE_ctx_red R) (t ^ y) (t' ^ y)) -> (lab_EE_ctx_red R) (t[u]) (t'[u]).
+Proof.
+    Admitted.
+
+Lemma EE_clos_inner_sub: forall R t u u', (lab_EE_ctx_red R) (u) (u') -> (lab_EE_ctx_red R) (t[u]) (t[u']).
+Proof.
+    Admitted.
+
+Lemma EE_clos_outer_lsub: forall R t t' u L, (forall y : VarSet.elt, y \notin L -> (lab_EE_ctx_red R) (t ^ y) (t' ^ y)) -> (lab_EE_ctx_red R) (t[[u]]) (t'[[u]]).
+Proof.
+    Admitted.
+
+Lemma EE_clos_inner_lsub: forall R t u u', (lab_EE_ctx_red R) (u) (u') -> (lab_EE_ctx_red R) (t[[u]]) (t[[u']]).
+Proof.
+    Admitted.
 
 Lemma pterm_abs_EE_inversion: forall t v, (pterm_abs t) =EE v -> exists t', v = (pterm_abs t') /\ (t =EE t').
 Proof.
@@ -190,13 +208,13 @@ Lemma red_rename_lab_xe_eq: red_rename lab_x_e_eq.
 Proof.
     Admitted.
 
-Lemma lx_i_open_abs: forall x x0 L, (forall y : VarSet.elt, y \notin L -> x0 ^ y-->[lx_i]x ^ y) -> pterm_abs x0-->[lx_i]pterm_abs x.
-Proof.
-    Admitted.
+(*Lemma lx_i_open_abs: forall x x0 L, (forall y : VarSet.elt, y \notin L -> x0 ^ y-->[lx_i]x ^ y) -> pterm_abs x0-->[lx_i]pterm_abs x.*)
+(*Proof.*)
+    (*Admitted.*)
 
-Lemma lx_e_open_abs: forall x x0 L, (forall y : VarSet.elt, y \notin L -> x0 ^ y-->[lx_e]x ^ y) -> pterm_abs x0-->[lx_e]pterm_abs x.
-Proof.
-    Admitted.
+(*Lemma lx_e_open_abs: forall x x0 L, (forall y : VarSet.elt, y \notin L -> x0 ^ y-->[lx_e]x ^ y) -> pterm_abs x0-->[lx_e]pterm_abs x.*)
+(*Proof.*)
+    (*Admitted.*)
 
 Lemma term_EE_open: forall t t' x, t =EE t' -> (t ^ x) =EE (t' ^ x).
 Proof.
@@ -253,8 +271,6 @@ Proof.
     apply lab_sys_x_i_e with t s; auto. apply star_ctx_eqcc_lab_term with t0; auto*.
 
     (* app_left *)
-
-    (*apply star_ctx_eqcc_sym in H3.*)
     apply EE_presv_ie with (u := (pterm_app t u)) (u' := (pterm_app t' u)); auto.
     assert  (t-->[lx_i]t' \/ t-->[lx_e]t').
     apply IHlab_contextual_closure; auto. constructor 1; auto. admit. constructor 1; auto.
@@ -262,9 +278,7 @@ Proof.
     left. apply EE_clos_app_left. admit. auto.
     right. apply EE_clos_app_left. admit. auto.
 
-
     (* app_right *)
-    (*apply star_ctx_eqcc_sym in H3.*)
     apply EE_presv_ie with (u := (pterm_app t u)) (u' := (pterm_app t u')); auto.
     assert  (u-->[lx_i]u' \/ u-->[lx_e]u').
     apply IHlab_contextual_closure; auto. constructor 1; auto. admit. constructor 1; auto.
@@ -281,7 +295,78 @@ Proof.
     apply notin_union in H5; destruct H5.
     apply notin_union in H5; destruct H5.
     apply notin_union in H5; destruct H5.
+    destruct H4.
+    left. apply EE_clos_abs with L.
+    intros. pose proof red_rename_lab_xi_eq. apply H11 with z; auto.
+    right. apply EE_clos_abs with L.
+    intros. pose proof red_rename_lab_xe_eq. apply H11 with z; auto.
 
+    (* outer sub *)
+    apply EE_presv_ie with (u := t[u]) (u' := t'[u]); auto.
+    pick_fresh z.
+    assert  (t^z-->[lx_i]t'^z \/ t^z-->[lx_e]t'^z).
+    apply H1 with z; auto. constructor 1; auto. admit. constructor 1; auto. 
+    apply notin_union in Fr; destruct Fr.
+    apply notin_union in H6; destruct H6.
+    apply notin_union in H6; destruct H6.
+    apply notin_union in H6; destruct H6.
+    apply notin_union in H6; destruct H6.
+    destruct H5.
+    left. apply EE_clos_outer_sub with L.
+    intros. pose proof red_rename_lab_xi_eq. apply H13 with z; auto.
+    right. apply EE_clos_outer_sub with L.
+    intros. pose proof red_rename_lab_xe_eq. apply H13 with z; auto.
+
+    (* inner sub *)
+    apply EE_presv_ie with (u := t[u]) (u' := t[u']); auto.
+    assert (u' =EE u'). constructor 1; auto.
+    assert (u =EE u). constructor 1; auto.
+    apply EE_lab_term in H3. inversion H3; subst.
+    pose proof (IHlab_contextual_closure u' H4 u H9 H5).
+    destruct H6. 
+    left. apply EE_clos_inner_sub; auto.
+    right. apply EE_clos_inner_sub; auto.
+    auto.
+
+    (* outer lsub *)
+    apply EE_presv_ie with (u := t[[u]]) (u' := t'[[u]]); auto.
+    pick_fresh z.
+    assert  (t^z-->[lx_i]t'^z \/ t^z-->[lx_e]t'^z).
+    apply H1 with z; auto. constructor 1; auto. admit. constructor 1; auto. 
+    apply notin_union in Fr; destruct Fr.
+    apply notin_union in H6; destruct H6.
+    apply notin_union in H6; destruct H6.
+    apply notin_union in H6; destruct H6.
+    apply notin_union in H6; destruct H6.
+    destruct H5.
+    left. apply EE_clos_outer_lsub with L.
+    intros. pose proof red_rename_lab_xi_eq. apply H13 with z; auto.
+    right. apply EE_clos_outer_lsub with L.
+    intros. pose proof red_rename_lab_xe_eq. apply H13 with z; auto.
+
+    (* inner lsub *)
+    left. exists (t [[u]]) (t [[u']]). split. auto.
+    split*. 
+    apply EE_lab_term in H3.
+    inversion H3; subst.
+    apply lab_sys_lx_term_is_sys_Bx in H0; auto.
+    inversion H0; subst.
+    constructor 1.  constructor 1. auto. auto.
+    constructor 1.  constructor 1. auto. constructor 2; auto. 
+    auto.
+
+
+    (* i_e -> ex *)
+    intros. destruct H0; destruct H0; destruct H0; destruct H0; destruct H1; generalize dependent t; generalize dependent t'; induction H1; intros.
+
+    (*[> Interna <]*)
+    (*[> Base <]*)
+    inversion H; subst. 
+    exists (t1 [[t2]]) (t1 [[t2']]). 
+    split*. split*. 
+    constructor 8. admit. inversion H4; subst.
+    constructor 1; auto.  constructor 2; subst. auto. 
+    exists t s. split*. constructor 1; auto. constructor 1. constructor 3; auto.
 Qed.
 
 (*Lemma lab_ex_eq_i_e: forall t t', lab_term t -> (t -->[lex] t' <-> (t -->[lx_i] t' \/ t -->[lx_e] t')).*)
