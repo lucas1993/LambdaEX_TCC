@@ -94,15 +94,73 @@ Lemma star_ctx_eqcc_sym: forall t u, t =EE u -> u =EE t.
 Proof.
     Admitted.
 
-Lemma star_ctx_eqcc_lab_term: forall t t', lab_term t -> t =EE t' -> lab_term t'.
+Lemma term_EE_open: forall t t' x, (t ^ x) =EE t' -> exists u, t' = u ^ x.
 Proof.
     Admitted.
 
-(*Lemma pterm_app_EE_inversion: forall t u v, (pterm_app t u) =EE v -> exists t' u', v = (pterm_app t' u') /\ (t =EE t') /\ (u =EE u').*)
-(*Proof.*)
-    (*Admitted.*)
 
-(* ------------- star_lab clos *)
+(* ----------------------------------------------------- RED REGULAR *)
+
+Lemma red_rename_lab_ctx: forall R, red_rename R -> red_rename (lab_contextual_closure R).
+Proof.
+    Admitted.
+
+Lemma red_rename_eqcc: red_rename eqcc.
+Proof.
+   unfold red_rename.
+   intros.
+   induction H1. 
+   pose proof red_rename_eqc.  unfold red_rename in H2.
+   constructor 1.
+   apply H2 with x; auto.
+   admit. (* RED_RENAME LAB_EQC *)
+Qed.
+
+Lemma close_var_spec : forall t x, term t -> 
+  exists u, t = u ^ x /\ body u /\ x \notin (fv u).
+Proof.
+    Admitted.
+
+Lemma red_rename_EE: red_rename star_ctx_eqcc.
+Proof.
+    unfold red_rename. intros. 
+    remember (t ^ x) as u.  remember (t' ^ x) as u'.
+    induction H1; subst.
+    apply open_var_inj in Hequ'.
+    rewrite Hequ'; auto. constructor 1; auto. auto. auto.
+    remember (t ^ x) as u.  remember (t' ^ x) as u'.
+    generalize dependent t.
+    generalize dependent t'.
+    induction H1; intros; subst.
+    admit.
+    assert (term u). admit.
+    pose proof (@close_var_spec u x H1).
+    destruct H2 as [ u0 [ H3 [ H4 H5 ] ] ].
+    apply star_closure_composition with (u0 ^ y).
+    apply IHtrans_closure1; auto. 
+    apply IHtrans_closure2; auto. 
+Qed.
+
+(* ----------------------------------------------------- RED RENAME *)
+
+Lemma red_rename_lab_lex: red_rename lab_eqc.
+Proof.
+    Admitted.
+
+Lemma red_rename_lab_xi_eq: red_rename lab_x_i_eq.
+Proof.
+    Admitted.
+
+Lemma red_rename_lab_xe_eq: red_rename lab_x_e_eq.
+Proof.
+    Admitted.
+
+Lemma red_rename_lab_lex: red_rename lab_lex.
+Proof.
+    Admitted.
+
+
+(* ------------------------------------------------------- star_lab clos *)
 
 Lemma star_lab_closure_app_left: forall R t t' u, lab_term u -> star_closure (lab_contextual_closure R) t t' -> star_closure (lab_contextual_closure R) (pterm_app t u) (pterm_app t' u).
 Proof.
@@ -126,7 +184,36 @@ Proof.
     constructor 2 with (pterm_app u u0); auto.
 Qed.
 
-(* -------------------  EE clos *)
+
+Lemma trans_lab_closure_abs: forall R t t' L, red_rename R -> (forall y : VarSet.elt, y \notin L -> trans_closure (lab_contextual_closure R) (t ^ y) (t' ^ y)) -> trans_closure (lab_contextual_closure R) (pterm_abs t) (pterm_abs t').
+Proof.
+    intros.
+    pick_fresh z.
+    apply notin_union in Fr. destruct Fr.
+    apply notin_union in H1. destruct H1.
+    pose proof (H0 z H1).
+    remember (t ^ z) as u.  remember (t' ^ z) as u'.
+    generalize dependent t. generalize dependent t'.
+    induction H4; intros; subst.
+    constructor 1. constructor 4 with L. intros. 
+    apply red_rename_lab_ctx in H. unfold red_rename in H. apply H with z; auto.
+    (*apply open_var_inj in Hequ; subst; auto. constructor 1; auto. *)
+Admitted.
+
+Lemma star_lab_closure_abs: forall R t t' L, (forall y : VarSet.elt, y \notin L -> star_closure (lab_contextual_closure R) (t ^ y) (t' ^ y)) -> star_closure (lab_contextual_closure R) (pterm_abs t) (pterm_abs t').
+Proof.
+    intros.
+    pick_fresh z.
+    apply notin_union in Fr. destruct Fr.
+    apply notin_union in H0. destruct H0.
+    pose proof (H z H0).
+    remember (t ^ z) as u.  remember (t' ^ z) as u'.
+    generalize dependent t. generalize dependent t'.
+    induction H3; intros; subst.
+    apply open_var_inj in Hequ; subst; auto. constructor 1; auto. 
+Admitted.
+
+(* -------------------------------------------------------------  EE clos *)
 
 Lemma EE_clos_app_left: forall R t t' u, lab_term u -> ((lab_EE_ctx_red R) t t') -> ((lab_EE_ctx_red R) (pterm_app t u) (pterm_app t' u)).
 Proof.
@@ -158,7 +245,19 @@ Qed.
 
 Lemma EE_clos_abs: forall R x x0 L, (forall y : VarSet.elt, y \notin L -> (lab_EE_ctx_red R) (x0 ^ y) (x ^ y)) -> (lab_EE_ctx_red R) (pterm_abs x0) (pterm_abs x).
 Proof.
-    Admitted.
+    intros.
+    pick_fresh z.
+    apply notin_union in Fr. destruct Fr.
+    apply notin_union in H0. destruct H0.
+    pose proof (H z H0).
+    destruct H3.  destruct H3.  destruct H3.  destruct H4.
+    pose proof H3;  apply (term_EE_open ) in H3.
+    pose proof H5;  apply star_ctx_eqcc_sym in H5;  apply (term_EE_open ) in H5.
+    destruct H3; subst.  destruct H5; subst.
+    exists (pterm_abs x3) (pterm_abs x1).
+    split. apply star_lab_closure_abs with (L := L); auto.
+    intros. apply red_rename_EE with z; auto.
+Admitted.
 
 Lemma EE_clos_outer_sub: forall R t t' u L, (forall y : VarSet.elt, y \notin L -> (lab_EE_ctx_red R) (t ^ y) (t' ^ y)) -> (lab_EE_ctx_red R) (t[u]) (t'[u]).
 Proof.
@@ -176,7 +275,7 @@ Lemma EE_clos_inner_lsub: forall R t u u', (lab_EE_ctx_red R) (u) (u') -> (lab_E
 Proof.
     Admitted.
 
-(* -------------------  EE ext_clos *)
+(* -------------------------------------------------------------  EE ext_clos *)
 
 Lemma EE_ext_clos_app_left: forall R t t' u, lab_term u -> ((ext_lab_EE_ctx_red R) t t') -> ((ext_lab_EE_ctx_red R) (pterm_app t u) (pterm_app t' u)).
 Proof.
@@ -233,17 +332,10 @@ Proof.
 (*Proof.*)
     (*Admitted.*)
 
-Lemma red_rename_lab_xi_eq: red_rename lab_x_i_eq.
-Proof.
-    Admitted.
+(*Lemma pterm_sub_EE_inversion: forall t u v, (t[u]) =EE v -> (exists t', v = (t'[u])) \/ (exists t' u', v = (t'[u'])) \/ (exists t' u', v = (t'[[u']])).*)
+(*Proof.*)
+    (*Admitted.*)
 
-Lemma red_rename_lab_xe_eq: red_rename lab_x_e_eq.
-Proof.
-    Admitted.
-
-Lemma red_rename_lab_lex: red_rename lab_lex.
-Proof.
-    Admitted.
 (*Lemma lx_i_open_abs: forall x x0 L, (forall y : VarSet.elt, y \notin L -> x0 ^ y-->[lx_i]x ^ y) -> pterm_abs x0-->[lx_i]pterm_abs x.*)
 (*Proof.*)
     (*Admitted.*)
@@ -252,9 +344,6 @@ Proof.
 (*Proof.*)
     (*Admitted.*)
 
-(*Lemma term_EE_open: forall t t' x, t =EE t' -> (t ^ x) =EE (t' ^ x).*)
-(*Proof.*)
-    (*Admitted.*)
 
 Lemma EE_lab_term : forall t t', lab_term t -> t =EE t' -> lab_term t'.
 Proof.
@@ -265,10 +354,8 @@ Proof.
     Admitted.
 
 
-(*Lemma pterm_sub_EE_inversion: forall t u v, (t[u]) =EE v -> (exists t', v = (t'[u])) \/ (exists t' u', v = (t'[u'])) \/ (exists t' u', v = (t'[[u']])).*)
-(*Proof.*)
-    (*Admitted.*)
 
+(* ------------------------------------------------------------  EE presv reductions *)
 
 Lemma EE_presv_ie: forall t t' u u', t =EE u -> u' =EE t' -> ((u -->[lx_i] u' \/ u -->[lx_e] u') -> (t -->[lx_i] t' \/ t -->[lx_e] t')).
 Proof.
@@ -295,20 +382,28 @@ Qed.
 
 Lemma EE_presv_lab_lex: forall t t' u u', t =EE u -> u' =EE t' -> ((u -->[lex] u') -> (t -->[lex] t')).
 Proof.
-    Admitted.
+    intros.
+    destruct H1.
+    destruct H1.
+    destruct H1.
+    destruct H2.
+    exists x x0.
+    split. apply star_closure_composition with u; auto.
+    split*. apply star_closure_composition with u'; auto.
+Qed.
 
-Lemma lab_ex_eq_i_e: forall t t', lab_term t -> (t -->[lex] t' <-> (t -->[lx_i] t' \/ t -->[lx_e] t')).
+(* ------------------------------------------------------------- IE <-> LEX (um passo) *)
+
+Lemma lab_ex_impl_i_e: forall t t', lab_term t -> t -->[lex] t' -> (t -->[lx_i] t' \/ t -->[lx_e] t').
 Proof.
-    split.
-    intro.
+    intros.
     destruct H0.  destruct H0. destruct H0.  destruct H1.
     generalize dependent t.
     generalize dependent t'.
     induction H1; intros.
 
-    (* -----------------------   ex -> i_e *)
     (* Base *)
-    apply lab_sys_x_i_e with t s; auto. apply star_ctx_eqcc_lab_term with t0; auto*.
+    apply lab_sys_x_i_e with t s; auto. apply EE_lab_term with t0; auto*.
 
     (* app_left *)
     apply EE_presv_ie with (u := (pterm_app t u)) (u' := (pterm_app t' u)); auto.
@@ -395,18 +490,21 @@ Proof.
     constructor 1.  constructor 1. auto. constructor 2; auto. 
     auto.
 
+Qed.
 
-    (* -----------------------   i_e -> ex *)
+Lemma lab_ie_impl_ex: forall t t', lab_term t -> (t -->[lx_i] t' \/ t -->[lx_e] t') -> t -->[lex] t'.
+Proof.
     intros. destruct H0; destruct H0; destruct H0; destruct H0; destruct H1; generalize dependent t; generalize dependent t'; induction H1; intros.
 
     (*[> ------------------  Interna <]*)
     (*[> Base <]*)
-    inversion H; subst. 
-    exists (t1 [[t2]]) (t1 [[t2']]). 
+
+    exists t s.
     split*. split*. 
+    inversion H; subst. 
     constructor 8. admit. inversion H4; subst.
     constructor 1; auto.  constructor 2; subst. auto. 
-    exists t s. split*. constructor 1; auto. constructor 1. constructor 3; auto.
+    constructor 1; auto. constructor 3; auto.
 
     (* app_left *)
     apply EE_presv_lab_lex with (u := (pterm_app t u)) (u' := (pterm_app t' u)); auto.
@@ -466,11 +564,12 @@ Proof.
     apply EE_clos_outer_lsub with L.
     intros. pose proof red_rename_lab_lex. apply H14 with z; auto.
 
-    (*[> ------------------  Externa <]*)
+    (*[> -------------------------------------------------------  Externa <]*)
     (*[> Base <]*)
+    exists (t) (s).  split*. split*.  
     inversion H; subst. 
-    exists (t) (s).  split*. split*.  constructor 1.  constructor 1; auto.  
-    exists (t) (s).  split*. split*.  constructor 1.  constructor 2; auto.  
+    constructor 1.  constructor 1; auto.  
+    constructor 1.  constructor 2; auto.  
 
     (* app_left *)
     apply EE_presv_lab_lex with (u := (pterm_app t u)) (u' := (pterm_app t' u)); auto.
@@ -529,5 +628,12 @@ Proof.
     apply notin_union in H7; destruct H7.
     apply EE_clos_outer_lsub with L.
     intros. pose proof red_rename_lab_lex. apply H14 with z; auto.
+Qed.
+
+Lemma lab_ex_eq_i_e: forall t t', lab_term t -> (t -->[lex] t' <-> (t -->[lx_i] t' \/ t -->[lx_e] t')).
+Proof.
+    split.
+    intros; apply lab_ex_impl_i_e; auto.
+    intros; apply lab_ie_impl_ex; auto.
 Qed.
 
