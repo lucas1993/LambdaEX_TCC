@@ -98,8 +98,15 @@ Lemma term_EE_open: forall t t' x, (t ^ x) =EE t' -> exists u, t' = u ^ x.
 Proof.
     Admitted.
 
+Lemma close_var_spec : forall t x, term t -> 
+  exists u, t = u ^ x /\ body u /\ x \notin (fv u).
+Proof.
+    Admitted.
+
 
 (* ----------------------------------------------------- RED REGULAR *)
+
+(* ----------------------------------------------------- RED RENAME *)
 
 Lemma red_rename_lab_ctx: forall R, red_rename R -> red_rename (lab_contextual_closure R).
 Proof.
@@ -116,10 +123,6 @@ Proof.
    admit. (* RED_RENAME LAB_EQC *)
 Qed.
 
-Lemma close_var_spec : forall t x, term t -> 
-  exists u, t = u ^ x /\ body u /\ x \notin (fv u).
-Proof.
-    Admitted.
 
 Lemma red_rename_EE: red_rename star_ctx_eqcc.
 Proof.
@@ -141,7 +144,6 @@ Proof.
     apply IHtrans_closure2; auto. 
 Qed.
 
-(* ----------------------------------------------------- RED RENAME *)
 
 Lemma red_rename_lab_lex: red_rename lab_eqc.
 Proof.
