@@ -35,7 +35,7 @@ Inductive lab_x_i: pterm -> pterm -> Prop :=
                 lab_x_i t t'. 
 
 Definition lab_EE_ctx_red (R: pterm -> pterm -> Prop) (t: pterm) (u : pterm) := 
-    exists t' u', (t =EE t')/\(lab_contextual_closure R t' u')/\(u' =EE u).
+        exists t' u', (t =EE t')/\(lab_contextual_closure R t' u')/\(u' =EE u).
 
 Definition ext_lab_EE_ctx_red (R: pterm -> pterm -> Prop) (t: pterm) (u : pterm) := 
     exists t' u', (t =EE t')/\(ext_lab_contextual_closure R t' u')/\(u' =EE u).
@@ -47,6 +47,14 @@ Definition lab_x_e_eq := ext_lab_EE_ctx_red sys_Bx.
 
 Notation "t -->[lx_i] u" := (lab_x_i_eq t u) (at level 59, left associativity).
 Notation "t -->[lx_e] u" := (lab_x_e_eq t u) (at level 59, left associativity).
+
+(* -------------- *)
+
+Definition red_lab_regular (R : pterm -> pterm -> Prop) :=
+  forall t t', R t t' -> lab_term t /\ lab_term t'.
+
+
+(* --------------- *)
 
 Lemma lab_sys_x_i_e: forall t t' x x', lab_term t -> (x =EE t) -> (t' =EE x') -> lab_sys_lx t t' -> (x -->[lx_i] x' \/ x -->[lx_e] x').
 Proof.
@@ -103,12 +111,53 @@ Lemma close_var_spec : forall t x, term t ->
 Proof.
     Admitted.
 
+Lemma lab_close_var_spec : forall t x, lab_term t -> 
+  exists u, t = u ^ x /\ body u /\ x \notin (fv u).
+Proof.
+    Admitted.
+
 
 (* ----------------------------------------------------- RED REGULAR *)
+
+Lemma red_lab_regular_lab_ctx: forall R, red_lab_regular R -> red_lab_regular (lab_contextual_closure R).
+Proof.
+    Admitted.
+
+Lemma red_lab_regular_star: forall R, red_lab_regular R -> red_lab_regular (star_closure R).
+Proof.
+    Admitted.
+
+Lemma red_lab_regular_trans: forall R, red_lab_regular R -> red_lab_regular (trans_closure R).
+Proof.
+    Admitted.
+
+Lemma red_lab_regular_lab_eqc: red_lab_regular lab_eqc.
+Proof.
+    Admitted.
+
+Lemma red_lab_regular_eqcc: red_lab_regular eqcc.
+Proof.
+    Admitted.
+
+Lemma red_lab_regular_ctx_eqcc: red_lab_regular (lab_contextual_closure eqcc).
+Proof.
+    Admitted.
+
+Lemma red_lab_regular_EE: red_lab_regular (star_ctx_eqcc).
+Proof.
+    Admitted.
 
 (* ----------------------------------------------------- RED RENAME *)
 
 Lemma red_rename_lab_ctx: forall R, red_rename R -> red_rename (lab_contextual_closure R).
+Proof.
+    Admitted.
+
+Lemma red_rename_trans: forall R, red_rename R -> red_rename (trans_closure R).
+Proof.
+    Admitted.
+
+Lemma red_rename_lab_eqc: red_rename lab_eqc.
 Proof.
     Admitted.
 
@@ -120,7 +169,7 @@ Proof.
    pose proof red_rename_eqc.  unfold red_rename in H2.
    constructor 1.
    apply H2 with x; auto.
-   admit. (* RED_RENAME LAB_EQC *)
+   right. apply red_rename_lab_eqc with x; auto.
 Qed.
 
 
@@ -135,9 +184,14 @@ Proof.
     generalize dependent t.
     generalize dependent t'.
     induction H1; intros; subst.
-    admit.
-    assert (term u). admit.
-    pose proof (@close_var_spec u x H1).
+    pose proof (red_rename_lab_ctx red_rename_eqcc).
+    constructor 2. constructor 1.
+    apply (H2 x); auto.
+    assert (lab_term u). 
+    pose proof (red_lab_regular_trans (red_lab_regular_ctx_eqcc)).
+    unfold red_lab_regular in H1.
+    pose proof (H1 (t0 ^ x) u H1_). destruct H2.  auto.
+    pose proof (@lab_close_var_spec u x H1).
     destruct H2 as [ u0 [ H3 [ H4 H5 ] ] ].
     apply star_closure_composition with (u0 ^ y).
     apply IHtrans_closure1; auto. 
@@ -145,9 +199,6 @@ Proof.
 Qed.
 
 
-Lemma red_rename_lab_lex: red_rename lab_eqc.
-Proof.
-    Admitted.
 
 Lemma red_rename_lab_xi_eq: red_rename lab_x_i_eq.
 Proof.
@@ -193,27 +244,34 @@ Proof.
     pick_fresh z.
     apply notin_union in Fr. destruct Fr.
     apply notin_union in H1. destruct H1.
-    pose proof (H0 z H1).
+    pose proof (H0 z H1). clear H0.
     remember (t ^ z) as u.  remember (t' ^ z) as u'.
     generalize dependent t. generalize dependent t'.
     induction H4; intros; subst.
     constructor 1. constructor 4 with L. intros. 
     apply red_rename_lab_ctx in H. unfold red_rename in H. apply H with z; auto.
-    (*apply open_var_inj in Hequ; subst; auto. constructor 1; auto. *)
-Admitted.
+    assert (lab_term u). admit.
+    pose proof (lab_close_var_spec z H0).
+    destruct H4 as [u0 [eq1 [H5 H6] ] ]. subst.
+    constructor 2 with (pterm_abs u0).
+    apply IHtrans_closure1; auto.
+    apply IHtrans_closure2; auto.
+Qed.
 
-Lemma star_lab_closure_abs: forall R t t' L, (forall y : VarSet.elt, y \notin L -> star_closure (lab_contextual_closure R) (t ^ y) (t' ^ y)) -> star_closure (lab_contextual_closure R) (pterm_abs t) (pterm_abs t').
+Lemma star_lab_closure_abs: forall R t t' L, (forall y : VarSet.elt, y \notin L -> star_closure (lab_contextual_closure R) (t ^ y) (t' ^ y)) -> red_rename R -> star_closure (lab_contextual_closure R) (pterm_abs t) (pterm_abs t').
 Proof.
     intros.
     pick_fresh z.
     apply notin_union in Fr. destruct Fr.
-    apply notin_union in H0. destruct H0.
-    pose proof (H z H0).
+    apply notin_union in H1. destruct H1.
+    pose proof (H z H1).
     remember (t ^ z) as u.  remember (t' ^ z) as u'.
     generalize dependent t. generalize dependent t'.
-    induction H3; intros; subst.
+    induction H4; intros; subst.
     apply open_var_inj in Hequ; subst; auto. constructor 1; auto. 
-Admitted.
+    constructor 2. apply trans_lab_closure_abs with L; auto. intros.
+    apply red_rename_trans with z; auto. apply red_rename_lab_ctx; auto.
+Qed.
 
 (* -------------------------------------------------------------  EE clos *)
 
@@ -328,23 +386,6 @@ Proof.
     Admitted.
 
 (* ------------------- *)
-
-
-(*Lemma pterm_abs_EE_inversion: forall t v, (pterm_abs t) =EE v -> exists t', v = (pterm_abs t') /\ (t =EE t').*)
-(*Proof.*)
-    (*Admitted.*)
-
-(*Lemma pterm_sub_EE_inversion: forall t u v, (t[u]) =EE v -> (exists t', v = (t'[u])) \/ (exists t' u', v = (t'[u'])) \/ (exists t' u', v = (t'[[u']])).*)
-(*Proof.*)
-    (*Admitted.*)
-
-(*Lemma lx_i_open_abs: forall x x0 L, (forall y : VarSet.elt, y \notin L -> x0 ^ y-->[lx_i]x ^ y) -> pterm_abs x0-->[lx_i]pterm_abs x.*)
-(*Proof.*)
-    (*Admitted.*)
-
-(*Lemma lx_e_open_abs: forall x x0 L, (forall y : VarSet.elt, y \notin L -> x0 ^ y-->[lx_e]x ^ y) -> pterm_abs x0-->[lx_e]pterm_abs x.*)
-(*Proof.*)
-    (*Admitted.*)
 
 
 Lemma EE_lab_term : forall t t', lab_term t -> t =EE t' -> lab_term t'.
