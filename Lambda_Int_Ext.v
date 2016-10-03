@@ -98,22 +98,72 @@ Proof.
     admit. 
 Qed.
 
+Lemma ctx_eqcc_sym: forall t u, lab_contextual_closure eqcc t u -> lab_contextual_closure eqcc u t.
+Proof.
+    intros. induction H. 
+    destruct H. 
+    apply eqc_sym in H. constructor; constructor 1; auto.
+    apply lab_eqc_sym in H. constructor; constructor 2; auto.
+    constructor 2; auto.
+    constructor 3; auto.
+    constructor 4 with L; auto.
+    constructor 5 with L; auto.
+    constructor 6; auto.
+    constructor 7 with L; auto.
+    constructor 8; auto.
+    destruct H0. 
+    apply eqc_sym in H0. constructor 1; auto.
+    apply lab_eqc_sym in H0. constructor 2; auto.
+Qed.
+
 Lemma star_ctx_eqcc_sym: forall t u, t =EE u -> u =EE t.
 Proof.
-    Admitted.
+    intros. induction H. constructor. induction H.
+    constructor 2; constructor 1. apply ctx_eqcc_sym; auto.
+    apply star_closure_composition with u; auto.
+Qed.
 
 Lemma lab_open_close_var : forall (x : var) (t : pterm), lab_term t -> t = close t x ^ x.
 Proof.
-    Admitted.
+  introv W. unfold close, open. generalize 0.
+  induction W; intros k; simpls; f_equal*.
+  case_var*. simpl. case_nat*.
+  let L := gather_vars in match goal with |- _ = ?t => 
+    destruct (var_fresh (L \u fv t)) as [y Fr] end.
+  apply* (@open_var_inj y).
+  apply notin_union in Fr. destruct Fr.
+  apply notin_union in H1. destruct H1. auto.
+  apply notin_union in Fr. destruct Fr. auto.
+  unfolds open. rewrite* close_var_rec_open. VSD.fsetdec.
+  let L := gather_vars in match goal with |- _ = ?t => 
+    destruct (var_fresh (L \u fv t)) as [y Fr] end.
+  apply* (@open_var_inj y).
+  auto. auto.
+  (*rewrite* close_var_rec_open.  VSD.fsetdec.*)
+  unfolds open. rewrite* close_var_rec_open. VSD.fsetdec.
+  let L := gather_vars in match goal with |- _ = ?t => 
+    destruct (var_fresh (L \u fv t)) as [y Fr] end.
+  apply* (@open_var_inj y).
+  auto. auto.
+  unfolds open. rewrite* close_var_rec_open. VSD.fsetdec.
+  let L := gather_vars in match goal with |- _ = ?t => 
+    destruct (var_fresh (L \u fv t)) as [y Fr] end.
+  apply* (@open_var_inj y).
+  auto. auto.
+  unfolds open. 
+Admitted.
 
-Lemma term_EE_open: forall t t' x, (t ^ x) =EE t' -> exists u, t' = u ^ x.
+Lemma term_EE_open: forall t t' x, lab_term t' -> (t ^ x) =EE t' -> exists u, t' = u ^ x.
 Proof.
-    Admitted.
+    intros.
+    exists (close t' x).
+    rewrite <- lab_open_close_var; auto.
+    Qed.
 
 Lemma term_EE_open_fv: forall t t' x, lab_term t' -> x \notin fv(t) -> (t ^ x) =EE t' -> exists u, t' = u ^ x /\ x \notin fv(u).
 Proof.
     intros.
-    apply term_EE_open in H1.
+    apply term_EE_open in H1; auto.
     destruct H1. exists (close t' x). 
     split. rewrite <- lab_open_close_var; auto.
     apply close_fresh.
@@ -122,12 +172,42 @@ Qed.
 Lemma close_var_spec : forall t x, term t -> 
   exists u, t = u ^ x /\ body u /\ x \notin (fv u).
 Proof.
-    Admitted.
+    intros.
+    exists (close t x).
+    rewrite <- open_close_var; auto.
+    split*. split*.
+    apply close_var_body; auto.
+    apply close_fresh; auto.
+    Qed.
+
+Lemma close_var_lab_body : forall x t,  lab_term t -> lab_body (close t x).
+Proof.
+  introv W. exists {{x}}. intros y Fr.
+  unfold open, close. generalize 0. gen y.
+  induction W; intros y Fr k; simpls.
+  case_var; simpl. case_nat*.
+  auto*.
+  constructor 1.
+  constructor 1.
+  apply* lab_term_app.
+  apply IHW1; auto.
+  apply IHW2; auto.
+  apply_fresh* lab_term_abs.
+    unfolds open. rewrite* close_var_rec_open. VSD.fsetdec.
+  apply_fresh* lab_term_sub. unfolds open. rewrite* close_var_rec_open.  VSD.fsetdec.
+  apply_fresh* lab_term_sub'. unfolds open. rewrite* close_var_rec_open.  VSD.fsetdec.
+Admitted.
 
 Lemma lab_close_var_spec : forall t x, lab_term t -> 
-  exists u, t = u ^ x /\ body u /\ x \notin (fv u).
+  exists u, t = u ^ x /\ lab_body u /\ x \notin (fv u).
 Proof.
-    Admitted.
+    intros.
+    exists (close t x).
+    rewrite <- lab_open_close_var; auto.
+    split*. split*.
+    apply close_var_lab_body; auto.
+    apply close_fresh; auto.
+Qed.
 
 
 (* ----------------------------------------------------- RED REGULAR *)
@@ -161,6 +241,18 @@ Proof.
     Admitted.
 
 Lemma red_lab_regular_EE: red_lab_regular (star_ctx_eqcc).
+Proof.
+    Admitted.
+
+Lemma red_lab_regular_lab_xi: red_lab_regular lab_x_i.
+Proof.
+    Admitted.
+
+Lemma red_lab_regular_lab_sys_lx: red_lab_regular lab_sys_lx.
+Proof.
+    Admitted.
+
+Lemma red_lab_regular_sys_Bx: red_lab_regular sys_Bx.
 Proof.
     Admitted.
 
@@ -221,11 +313,24 @@ Qed.
 
 
 
+Lemma red_rename_lab_xi: red_rename lab_x_i.
+Proof.
+    Admitted.
+
 Lemma red_rename_lab_xi_eq: red_rename lab_x_i_eq.
 Proof.
     Admitted.
 
 Lemma red_rename_lab_xe_eq: red_rename lab_x_e_eq.
+Proof.
+    Admitted.
+
+
+Lemma red_rename_sys_Bx: red_rename sys_Bx.
+Proof.
+    Admitted.
+
+Lemma red_rename_lab_sys_lx: red_rename lab_sys_lx.
 Proof.
     Admitted.
 
@@ -672,12 +777,18 @@ Qed.
 
 Lemma EE_lab_term : forall t t', lab_term t -> t =EE t' -> lab_term t'.
 Proof.
-    Admitted.
+    intros. apply red_lab_regular_EE in H0. destruct H0; auto.
+
+    Qed.
 
 Lemma lab_sys_lx_term_is_sys_Bx : forall t t', term t -> lab_sys_lx t t' -> sys_Bx t t'.
 Proof.
-    Admitted.
-
+    intros.
+    induction H0.
+    constructor; auto.
+    constructor 2; auto.
+    inversion H0; subst; inversion H.
+    Qed.
 
 
 (* ------------------------------------------------------------  EE presv reductions *)
@@ -756,9 +867,11 @@ Proof.
     apply notin_union in H5; destruct H5.
     apply notin_union in H5; destruct H5.
     destruct H4.
-    left. apply EE_ext_clos_abs with L.
-    intros. pose proof red_rename_lab_xi_eq. apply H11 with z; auto.
-    right. apply EE_ext_clos_abs with L.
+    left. apply EE_ext_clos_abs with L. exact red_rename_lab_xi. 
+    exact red_lab_regular_lab_xi.
+    intros. 
+    pose proof red_rename_lab_xi_eq. apply H11 with z; auto.
+    right. apply EE_ext_clos_abs with L. exact red_rename_sys_Bx. exact red_lab_regular_sys_Bx.
     intros. pose proof red_rename_lab_xe_eq. apply H11 with z; auto.
 
     (* outer sub *)
@@ -773,8 +886,12 @@ Proof.
     apply notin_union in H6; destruct H6.
     destruct H5.
     left. apply EE_ext_clos_outer_sub with L.
-    intros. pose proof red_rename_lab_xi_eq. apply H13 with z; auto.
+    intros. pose proof red_rename_lab_xi_eq. 
+    admit. exact red_rename_lab_xi. exact red_lab_regular_lab_xi.
+    intros.
+    pose proof red_rename_lab_xi_eq.  apply H13 with z; auto.
     right. apply EE_ext_clos_outer_sub with L.
+    admit. exact red_rename_sys_Bx. exact red_lab_regular_sys_Bx.
     intros. pose proof red_rename_lab_xe_eq. apply H13 with z; auto.
 
     (* inner sub *)
@@ -800,9 +917,14 @@ Proof.
     apply notin_union in H6; destruct H6.
     destruct H5.
     left. apply EE_ext_clos_outer_lsub with L.
-    intros. pose proof red_rename_lab_xi_eq. apply H13 with z; auto.
+    admit. admit. (** SN **)  exact red_rename_lab_xi. exact red_lab_regular_lab_xi.
+    intros.
+    pose proof red_rename_lab_xi_eq.  apply H13 with z; auto.
     right. apply EE_ext_clos_outer_lsub with L.
+    admit. admit. (** SN **) exact red_rename_sys_Bx. exact red_lab_regular_sys_Bx.
     intros. pose proof red_rename_lab_xe_eq. apply H13 with z; auto.
+
+
 
     (* inner lsub *)
     left. exists (t [[u]]) (t [[u']]). split. auto.
@@ -851,7 +973,10 @@ Proof.
     apply notin_union in H5; destruct H5.
     apply notin_union in H5; destruct H5.
     apply EE_clos_abs with L.
-    intros. pose proof red_rename_lab_lex. apply H11 with z; auto.
+    intros. pose proof red_rename_lab_lex. 
+    exact red_rename_lab_sys_lx.
+    exact red_lab_regular_lab_sys_lx.
+    intros. apply red_rename_lab_lex with z; auto.
 
     (* outer sub *)
     apply EE_presv_lab_lex with (u := t[u]) (u' := t'[u]); auto.
@@ -863,8 +988,10 @@ Proof.
     apply notin_union in H6; destruct H6.
     apply notin_union in H6; destruct H6.
     apply notin_union in H6; destruct H6.
-    apply EE_clos_outer_sub with L.
-    intros. pose proof red_rename_lab_lex. apply H13 with z; auto.
+    apply EE_clos_outer_sub with L; auto.
+    exact red_rename_lab_sys_lx.
+    exact red_lab_regular_lab_sys_lx.
+    intros. apply red_rename_lab_lex with z; auto.
 
     (* inner sub *)
     apply EE_presv_lab_lex with (u := t[u]) (u' := t[u']); auto.
@@ -886,8 +1013,10 @@ Proof.
     apply notin_union in H7; destruct H7.
     apply notin_union in H7; destruct H7.
     apply notin_union in H7; destruct H7.
-    apply EE_clos_outer_lsub with L.
-    intros. pose proof red_rename_lab_lex. apply H14 with z; auto.
+    apply EE_clos_outer_lsub with L; auto.
+    exact red_rename_lab_sys_lx.
+    exact red_lab_regular_lab_sys_lx.
+    intros. apply red_rename_lab_lex with z; auto.
 
     (*[> -------------------------------------------------------  Externa <]*)
     (*[> Base <]*)
@@ -916,7 +1045,10 @@ Proof.
     apply notin_union in H5; destruct H5.
     apply notin_union in H5; destruct H5.
     apply EE_clos_abs with L.
-    intros. pose proof red_rename_lab_lex. apply H11 with z; auto.
+    intros. pose proof red_rename_lab_lex. 
+    exact red_rename_lab_sys_lx.
+    exact red_lab_regular_lab_sys_lx.
+    intros. apply red_rename_lab_lex with z; auto.
 
     (* outer sub *)
     apply EE_presv_lab_lex with (u := t[u]) (u' := t'[u]); auto.
@@ -928,8 +1060,10 @@ Proof.
     apply notin_union in H6; destruct H6.
     apply notin_union in H6; destruct H6.
     apply notin_union in H6; destruct H6.
-    apply EE_clos_outer_sub with L.
-    intros. pose proof red_rename_lab_lex. apply H13 with z; auto.
+    apply EE_clos_outer_sub with L; auto.
+    exact red_rename_lab_sys_lx.
+    exact red_lab_regular_lab_sys_lx.
+    intros. apply red_rename_lab_lex with z; auto.
 
     (* inner sub *)
     apply EE_presv_lab_lex with (u := t[u]) (u' := t[u']); auto.
@@ -951,8 +1085,10 @@ Proof.
     apply notin_union in H7; destruct H7.
     apply notin_union in H7; destruct H7.
     apply notin_union in H7; destruct H7.
-    apply EE_clos_outer_lsub with L.
-    intros. pose proof red_rename_lab_lex. apply H14 with z; auto.
+    apply EE_clos_outer_lsub with L; auto.
+    exact red_rename_lab_sys_lx.
+    exact red_lab_regular_lab_sys_lx.
+    intros. apply red_rename_lab_lex with z; auto.
 Qed.
 
 Lemma lab_ex_eq_i_e: forall t t', lab_term t -> (t -->[lex] t' <-> (t -->[lx_i] t' \/ t -->[lx_e] t')).
