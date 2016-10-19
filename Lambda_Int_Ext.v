@@ -128,6 +128,7 @@ Proof.
   introv W. unfold close, open. generalize 0.
   induction W; intros k; simpls; f_equal*.
   case_var*. simpl. case_nat*.
+
   let L := gather_vars in match goal with |- _ = ?t => 
     destruct (var_fresh (L \u fv t)) as [y Fr] end.
   apply* (@open_var_inj y).
@@ -135,6 +136,7 @@ Proof.
   apply notin_union in H1. destruct H1. auto.
   apply notin_union in Fr. destruct Fr. auto.
   unfolds open. rewrite* close_var_rec_open. VSD.fsetdec.
+  (*Focus 3. fail.*)
   let L := gather_vars in match goal with |- _ = ?t => 
     destruct (var_fresh (L \u fv t)) as [y Fr] end.
   apply* (@open_var_inj y).
@@ -151,6 +153,7 @@ Proof.
   apply* (@open_var_inj y).
   auto. auto.
   unfolds open. 
+  (*fail.*)
 Admitted.
 
 Lemma term_EE_open: forall t t' x, lab_term t' -> (t ^ x) =EE t' -> exists u, t' = u ^ x.
@@ -214,7 +217,43 @@ Qed.
 
 Lemma red_lab_regular_lab_ctx: forall R, red_lab_regular R -> red_lab_regular (lab_contextual_closure R).
 Proof.
-    Admitted.
+    intros. unfold red_lab_regular in *.
+    intros. induction H0. apply H; auto.
+    destruct IHlab_contextual_closure.
+    split; constructor; auto.
+    destruct IHlab_contextual_closure.
+    split; constructor; auto.
+
+    split; constructor 3 with L; intros.
+    pose proof (H1 x H2) as H'; destruct H'; auto.
+    pose proof (H1 x H2) as H'; destruct H'; auto.
+
+    split; constructor 4 with L; intros; auto.
+    pose proof (H2 x H3) as H'; destruct H'; auto.
+    pose proof (H2 x H3) as H'; destruct H'; auto.
+
+    destruct IHlab_contextual_closure.
+    split; constructor 4 with (fv(t)); intros; auto.
+    rewrite lab_term_eq_term''. rewrite lab_body_eq_body'' in H0.
+    unfold body'' in *.  unfold term'' in *. apply lc_at_open_var_rec'; auto.
+    rewrite lab_term_eq_term''. rewrite lab_body_eq_body'' in H0.
+    unfold body'' in *.  unfold term'' in *. apply lc_at_open_var_rec'; auto.
+
+    split; constructor 5 with L; intros; auto.
+    pose proof (H2 x H3) as H'; destruct H'; auto.
+    admit.
+    pose proof (H2 x H3) as H'; destruct H'; auto.
+    admit.
+
+    split; constructor 5 with (fv(t)); intros; auto.
+    rewrite lab_term_eq_term''. rewrite lab_body_eq_body'' in H0.
+    unfold body'' in *.  unfold term'' in *. apply lc_at_open_var_rec'; auto.
+    admit. admit.
+    rewrite lab_term_eq_term''. rewrite lab_body_eq_body'' in H0.
+    unfold body'' in *.  unfold term'' in *. apply lc_at_open_var_rec'; auto.
+    admit. admit.
+
+Qed.
 
 Lemma red_lab_regular_ext_lab_ctx: forall R, red_lab_regular R -> red_lab_regular (ext_lab_contextual_closure R).
 Proof.
