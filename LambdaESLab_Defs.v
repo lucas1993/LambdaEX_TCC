@@ -79,8 +79,30 @@ Inductive lab_contextual_closure (Red : pterm -> pterm -> Prop) : pterm -> pterm
   | lab_subst'_left : forall t t' u L, term u -> 
 	  	(forall x, x \notin L -> lab_contextual_closure Red (t^x) (t'^x)) -> 
 	        lab_contextual_closure Red  (t[[u]]) (t'[[u]])
-  | lab_subst'_right : forall t u u', lab_body t -> Red u u' -> 
+  | lab_subst'_right : forall t u u', lab_body t -> term u ->  (SN lex u) -> Red u u' -> 
 	  	lab_contextual_closure Red  (t[[u]]) (t[[u']]) 
+.
+
+
+(* No SN *)
+Inductive simpl_lab_contextual_closure (Red : pterm -> pterm -> Prop) : pterm -> pterm -> Prop :=
+  | s_lab_redex : forall t s, Red t s -> simpl_lab_contextual_closure Red t s
+  | s_lab_app_left : forall t t' u, lab_term u -> simpl_lab_contextual_closure Red t t' -> 
+	  		simpl_lab_contextual_closure Red (pterm_app t u) (pterm_app t' u)
+  | s_lab_app_right : forall t u u', lab_term t -> simpl_lab_contextual_closure Red u u' -> 
+	  		simpl_lab_contextual_closure Red (pterm_app t u) (pterm_app t u')
+  | s_lab_abs_in : forall t t' L, (forall x, x \notin L -> simpl_lab_contextual_closure Red (t^x) (t'^x)) 
+      -> simpl_lab_contextual_closure Red (pterm_abs t) (pterm_abs t')
+  | s_lab_subst_left : forall t t' u L, lab_term u -> 
+	  	(forall x, x \notin L -> simpl_lab_contextual_closure Red (t^x) (t'^x)) -> 
+	        simpl_lab_contextual_closure Red  (t[u]) (t'[u])
+  | s_lab_subst_right : forall t u u', lab_body t -> simpl_lab_contextual_closure Red u u' -> 
+	  	simpl_lab_contextual_closure Red  (t[u]) (t[u']) 
+  | s_lab_subst'_left : forall t t' u L, term u -> 
+	  	(forall x, x \notin L -> simpl_lab_contextual_closure Red (t^x) (t'^x)) -> 
+	        simpl_lab_contextual_closure Red  (t[[u]]) (t'[[u]])
+  | s_lab_subst'_right : forall t u u', lab_body t -> term u -> Red u u' -> 
+	  	simpl_lab_contextual_closure Red  (t[[u]]) (t[[u']]) 
 .
 
 (* ====================================================================== *)
@@ -118,6 +140,25 @@ Proof.
   destruct H0. admit. (* !!!!!!!!!!!!! *)
 Qed.
 
+
+Lemma lc_at'_weaken_ind : forall k1 k2 t,
+  lc_at' k1 t -> k1 <= k2 -> lc_at' k2 t.
+Proof. introv. gen k1 k2. induction t; simpl; introv T Lt; auto*.
+       omega. apply (IHt (S k1) (S k2)); trivial; try omega.
+       case T; clear T; intros Tt1 Tt2. split. 
+       apply (IHt1 (S k1) (S k2)); trivial; try omega.
+       apply (IHt2 k1 k2); trivial; try omega.
+       destruct T as [ H1 [H2 H3] ].
+       split*. 
+       apply lc_at_weaken_ind with k1; auto.
+       split*.
+       apply IHt1 with (S k1); auto.
+       apply le_n_S; auto.
+Qed. 
+
+Lemma lc_at'_weaken : forall k t,
+  term'' t -> lc_at' k t.
+Proof. introv H. apply~ (@lc_at'_weaken_ind 0). omega. Qed.
 
 Lemma lab_term_to_term'' : forall t,
   lab_term t -> term'' t.
@@ -348,7 +389,7 @@ Qed.
 Definition eqcc t t' := eqc t t' \/ lab_eqc t t'.
 Notation "t =ee t'" := (eqcc t t') (at level 66).
 
-Definition star_ctx_eqcc (t: pterm) (u : pterm) :=  star_closure (lab_contextual_closure eqcc) t u . 
+Definition star_ctx_eqcc (t: pterm) (u : pterm) :=  star_closure (simpl_lab_contextual_closure eqcc) t u . 
 Notation "t =EE u" := (star_ctx_eqcc t u) (at level 66).
 
 

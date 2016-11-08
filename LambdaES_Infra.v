@@ -218,9 +218,10 @@ Proof.
   case_var*. simpl. case_nat*.
 Qed. 
          
-Lemma open_close_var : forall x t,  term t -> t = (close t x) ^ x.
+
+Lemma open_close_var_gen : forall x t k,  term t -> t = {k ~> (pterm_fvar x)}(close_rec k x t) .
 Proof.
-  introv W. unfold close, open. generalize 0.
+  introv W. unfold close, open. generalize dependent k.
   induction W; intros k; simpls; f_equal*.
   case_var*. simpl. case_nat*.
   let L := gather_vars in match goal with |- _ = ?t => 
@@ -231,6 +232,11 @@ Proof.
     destruct (var_fresh (L \u fv t)) as [y Fr] end.
   apply* (@open_var_inj y).
   unfolds open. rewrite* close_var_rec_open.  VSD.fsetdec.
+Qed. 
+
+Lemma open_close_var : forall x t,  term t -> t = (close t x) ^ x.
+Proof.
+    intros; apply open_close_var_gen; auto.
 Qed. 
 
 Lemma close_var_body : forall x t,  term t -> body (close t x).
@@ -519,6 +525,7 @@ Qed.
 Lemma lc_at_weaken : forall k t,
   term' t -> lc_at k t.
 Proof. introv H. apply~ (@lc_at_weaken_ind 0). omega. Qed.
+
 
 
 (* ********************************************************************** *)

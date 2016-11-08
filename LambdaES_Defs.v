@@ -63,7 +63,6 @@ Fixpoint fv (t : pterm) {struct t} : vars :=
   | pterm_lsub t1 t2 => (fv t1) \u (fv t2)
   end.
 
-  
 Fixpoint bswap_rec (k : nat) (t : pterm) {struct t} : pterm :=
   match t with
   | pterm_bvar i    => if k === i then (pterm_bvar (S k))
