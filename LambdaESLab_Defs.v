@@ -127,6 +127,14 @@ Definition body'' t := lc_at' 1 t.
 
 (** Equivalence of [term and [term'] *)
 
+Lemma term_impl_lab_term: forall t, term t -> lab_term t.
+Proof.
+    induction 1; try constructor; intuition eauto.
+    constructor 3 with L. auto.
+    constructor 4 with L; auto.
+
+Qed.
+
 
 Lemma lc_rec_open_var_rec' : forall x t k,
   lc_at' k (open_rec k x t) -> lc_at' (S k) t.
@@ -189,6 +197,113 @@ Proof.
   destruct H0. admit. (* !!!!!!!!!!!!! *)
 Qed. 
 
+Lemma lc_at'_open : forall n t u, term u -> (lc_at' (S n) t <-> lc_at' n (open_rec n u t)).
+Proof.
+ intros n t u T. split.
+(* -> *)
+ generalize n; clear n.
+ induction t.
+ (* bvar *)
+ intros n' H0. unfolds open_rec.
+ case (n' === n). intro H1.
+ rewrite H1 in H0. rewrite H1. simpl in *|-*. 
+
+ apply term_impl_lab_term in T.
+ apply lab_term_to_term'' in T. unfold term'' in T.
+ apply lc_at'_weaken_ind with (k1 := 0); try omega; trivial.
+ intro H1. simpl in *|-*. omega.
+ (* fvar *)
+ intros n H. simpl. trivial.
+ (* app *)
+ intros n H. simpl in *|-*.
+ case H; clear H; intros Ht1 Ht2; split.
+ apply (IHt1 n Ht1). 
+ apply (IHt2 n Ht2).
+ (* abs *)
+ intros n H. simpl in *|-*.
+ apply (IHt (S n) H).
+ (* sub *)
+ intros n H. simpl in *|-*.
+ case H; clear H; intros Ht1 Ht2; split.
+ apply (IHt1 (S n) Ht1). 
+ apply (IHt2 n Ht2).
+ (* sub' *)
+ simpl. intros. 
+ split*. apply lc_at_open; auto.
+ destruct H; auto.
+ destruct H.  destruct H0.
+ split. admit. (* !!!!!!!!!!!! *)
+ apply IHt1; auto.
+(* <- *)
+ generalize n; clear n.
+ induction t.
+ (* bvar *)
+ intros n' H0. simpl in H0.
+ case (n' === n) in H0. simpl. omega.
+ simpl in *|-*. omega.
+ (* fvar *)
+ simpl. trivial. 
+ (* app *)
+ simpl in *|-*. intros n H.
+ case H; clear H; intros Ht1 Ht2; split.
+ apply (IHt1 n Ht1). 
+ apply (IHt2 n Ht2).
+ (* abs *)
+ simpl in *|-*. intros n H. 
+ apply (IHt (S n) H).
+ (* sub *)
+ simpl in *|-*. intros n H. 
+ case H; clear H; intros Ht1 Ht2; split.
+ apply (IHt1 (S n) Ht1). 
+ apply (IHt2 n Ht2).
+ (* sub' *)
+ simpl. intros. 
+ split*. 
+ destruct H.
+ rewrite lc_at_open with (u := u); auto.
+ destruct H; auto.
+ destruct H0. 
+ split. admit. (* !!!!!!!!!!!! *)
+ apply IHt1; auto.
+Qed.
+
+
+Lemma lc_at'_bswap_rec : forall n k t, S k < n -> lc_at' n t -> lc_at' n (bswap_rec k t).
+Proof.
+ intros n k t. 
+ generalize n k; clear n k.
+ induction t.
+ (* bvar *)
+ intros n' k H0 H1. simpl in H1.
+ unfolds bswap_rec. 
+ case (k === n). intro H2.
+ rewrite H2. simpl. omega. intro H2.
+ case (S k === n). intro H3. simpl. omega. intro H3. 
+ simpl. trivial.
+ (* fvar *)
+ intros n k H0 H1. simpl in *|-*. trivial.
+ (* app *)
+ intros n k H0 H1. simpl in *|-*. destruct H1. split.
+ apply IHt1; trivial. apply IHt2; trivial.
+ (* abs *)
+ intros n k H0 H1. simpl in *|-*.
+ apply IHt; try omega; trivial.
+ (* sub *)
+ intros n k H0 H1. simpl in *|-*. destruct H1. split.
+ apply IHt1; try omega; trivial. apply IHt2; trivial.
+ (* sub' *)
+ intros n k H0 H1. simpl in *|-*. destruct H1 as [ H2 [ H3 H4 ] ].
+ split*. apply lc_at_bswap_rec; auto.
+ split*. admit. (* !!!!! *)
+ apply IHt1; auto. apply lt_n_S; auto.
+Qed.
+
+Lemma bswap_rec_lc_at' : forall n k t, S k < n -> lc_at' n (bswap_rec k t) -> lc_at' n t.
+Proof.
+    Admitted.
+ 
+
+
 Lemma term''_to_lab_term : forall t,
   term'' t -> lab_term t.
 Proof.
@@ -228,14 +343,6 @@ Proof.
   constructor 5 with (fv t \u fv t1 \u fv t3). intros.
   destruct H1. destruct H3. apply H0. eauto. auto. unfold term''. 
   apply lc_at_open_var_rec'; auto. destruct H1. apply term'_to_term; auto. destruct H1. destruct* H2.
-Qed.
-
-Lemma term_impl_lab_term: forall t, term t -> lab_term t.
-Proof.
-    induction 1; try constructor; intuition eauto.
-    constructor 3 with L. auto.
-    constructor 4 with L; auto.
-
 Qed.
 
 

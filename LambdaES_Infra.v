@@ -1721,7 +1721,7 @@ Proof.
 Qed.
  
 
-Lemma lc_at_bswap : forall n k t, S k < n -> lc_at n t -> lc_at n (bswap_rec k t).
+Lemma lc_at_bswap_rec : forall n k t, S k < n -> lc_at n t -> lc_at n (bswap_rec k t).
 Proof.
  intros n k t. 
  generalize n k; clear n k.
