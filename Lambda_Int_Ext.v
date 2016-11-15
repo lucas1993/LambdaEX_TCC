@@ -485,28 +485,25 @@ Qed.
 
 Lemma red_rename_EE: red_rename star_ctx_eqcc.
 Proof.
-    unfold red_rename. intros. 
-    remember (t ^ x) as u.  remember (t' ^ x) as u'.
-    induction H1; subst.
-    apply open_var_inj in Hequ'.
-    rewrite Hequ'; auto. constructor 1; auto. auto. auto.
-    remember (t ^ x) as u.  remember (t' ^ x) as u'.
-    generalize dependent t.
-    generalize dependent t'.
-    induction H1; intros; subst.
-    pose proof (red_rename_simpl_lab_ctx red_rename_eqcc).
-    constructor 2. constructor 1.
-    apply (H2 x); auto.
-    assert (lab_term u). 
-    pose proof (red_lab_regular'_trans (red_lab_regular'_ctx_eqcc)).
-    unfold red_lab_regular' in H1.
-    pose proof (H1 (t0 ^ x) u H1_). destruct H2.  auto.
+    (*unfold red_rename. intros. *)
+    (*remember (t ^ x) as u.  remember (t' ^ x) as u'.*)
+    (*induction H1; subst.*)
+    (*apply open_var_inj in Hequ'.*)
+    (*rewrite Hequ'; auto. constructor 1; auto. auto. auto.*)
+    (*remember (t ^ x) as u.  remember (t' ^ x) as u'.*)
+    (*generalize dependent t.*)
+    (*generalize dependent t'.*)
+    (*induction H1; intros; subst.*)
+    (*pose proof (red_rename_simpl_lab_ctx red_rename_eqcc).*)
+    (*constructor 2. constructor 1.*)
+    (*apply (H2 x); auto.*)
+    (*assert (lab_term u). admit.*)
     (*pose proof (@lab_close_var_spec u x H1).*)
     (*destruct H2 as [ u0 [ H3 [ H4 H5 ] ] ].*)
     (*apply star_closure_composition with (u0 ^ y).*)
     (*apply IHtrans_closure1; auto. *)
     (*apply IHtrans_closure2; auto. *)
-Admitted.
+    Admitted.
 
 
 
