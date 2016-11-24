@@ -53,6 +53,19 @@ Notation "t -->[lx_e] u" := (lab_x_e_eq t u) (at level 59, left associativity).
 
 (* -------------- *)
 
+Lemma term_ee_is_eqc: forall t t', term t -> t =ee t' -> eqc t t'.
+Proof.
+    intros.
+    destruct H0. auto.
+    destruct H0; inversion H; subst.
+    pick_fresh x.
+    apply notin_union in Fr. destruct Fr.
+    apply notin_union in H2. destruct H2.
+    apply notin_union in H2. destruct H2.
+    pose proof H4 x H2.
+    inversion H8.
+    Qed.
+
 Lemma SN_open: forall t x k, SN lex t -> SN lex ({k ~> (pterm_fvar x)} t).
 Proof.
     Admitted.
@@ -311,7 +324,13 @@ Qed.
 
 Lemma red_lab_regular'_star: forall R, red_lab_regular' R -> red_lab_regular' (star_closure R).
 Proof.
-    Admitted.
+    unfold red_lab_regular' in *.
+    intros.
+    induction H0.
+    reflexivity.
+    induction H0. auto.
+    rewrite IHtrans_closure1; auto.
+    Qed.
 
 Lemma red_lab_regular'_trans: forall R, red_lab_regular' R -> red_lab_regular' (trans_closure R).
 Proof.
@@ -421,17 +440,113 @@ Proof.
 
 Qed.
 
+
+Lemma red_regular'_eqcc: red_regular' eqcc.
+Proof.
+    Admitted.
+
 Lemma red_lab_regular'_eqcc: red_lab_regular' eqcc.
 Proof.
     Admitted.
 
 Lemma red_lab_regular'_ctx_eqcc: red_lab_regular' (simpl_lab_contextual_closure eqcc).
 Proof.
-    Admitted.
+    intros. unfold red_lab_regular' in *.
+    intros. induction H. apply red_lab_regular'_eqcc; auto.
+    split; constructor; auto.
+    inversion H1; subst; auto.
+    apply IHsimpl_lab_contextual_closure in H4; auto.
+    inversion H1; subst; auto.
+    apply IHsimpl_lab_contextual_closure in H4; auto.
+
+
+    split; constructor; auto.
+    inversion H1; subst; auto.
+    apply IHsimpl_lab_contextual_closure in H5; auto.
+    inversion H1; subst; auto.
+    apply IHsimpl_lab_contextual_closure in H5; auto.
+
+    split; intros. 
+    inversion H1; subst.
+    constructor 3 with (L0 \u L); intros.
+    rewrite <- H0; auto. 
+    inversion H1; subst.
+    constructor 3 with (L0 \u L); intros.
+    rewrite H0; auto. 
+
+
+    split; intros. 
+    inversion H2; subst.
+    constructor 4 with (L0 \u L); intros; auto.
+    rewrite <- H1; auto. 
+    inversion H2; subst.
+    constructor 4 with (L0 \u L); intros; auto.
+    rewrite -> H1; auto. 
+
+
+    split; intros. 
+    inversion H1; subst.
+    constructor 4 with L; auto. rewrite <- IHsimpl_lab_contextual_closure; auto.
+    inversion H1; subst.
+    constructor 4 with L; auto. rewrite -> IHsimpl_lab_contextual_closure; auto.
+
+
+    split; intros. 
+    inversion H2; subst.
+    constructor 5 with (L0 \u L); intros; auto.
+    rewrite <- H1; auto. 
+    inversion H2; subst.
+    constructor 5 with (L0 \u L); intros; auto.
+    rewrite -> H1; auto. 
+
+
+    split; intros. 
+    inversion H2; subst.
+    constructor 5 with (L); intros; auto.
+    pose proof (red_regular'_eqcc H1); auto. 
+    rewrite <- H3; auto.
+    inversion H7.
+    exists x.
+    inversion H3.
+    constructor. intros.
+
+    apply H4.  apply term_ee_is_eqc in H1.
+    destruct H8.  destruct H8.  destruct H8.  destruct H9.
+    pose proof ES_redex eqc u u' H1. 
+    pose proof one_step_reduction (ES_contextual_closure eqc) u u' H11. 
+    pose proof star_trans_reduction (ES_contextual_closure eqc) u u' H12. 
+    pose proof star_closure_composition (ES_contextual_closure eqc) u u' x0 H13 H8.
+    exists x0 x1. auto. 
+
+    auto.
+
+    inversion H2; subst.
+    constructor 5 with (L); intros; auto.
+    inversion H7.
+    exists x.
+    inversion H3.
+    constructor. intros.
+
+    apply H4.  apply term_ee_is_eqc in H1; auto.
+    destruct H8.  destruct H8.  destruct H8.  destruct H9.
+    pose proof ES_redex eqc u u' H1. 
+    pose proof one_step_reduction (ES_contextual_closure eqc) u u' H11. 
+    pose proof star_trans_reduction (ES_contextual_closure eqc) u u' H12. 
+    apply eqC_sym in H13.
+    pose proof star_closure_composition (ES_contextual_closure eqc) u' u x0 H13 H8.
+    exists x0 x1. auto. 
+
+    Qed.
 
 Lemma red_lab_regular'_EE: red_lab_regular' (star_ctx_eqcc).
 Proof.
-    Admitted.
+    unfold red_lab_regular' in *.
+    intros.
+    induction H.
+    reflexivity.
+    induction H. apply red_lab_regular'_ctx_eqcc; auto.
+    rewrite IHtrans_closure1; auto.
+    Qed.
 
 Lemma red_lab_regular'_lab_xi: red_lab_regular' lab_x_i.
 Proof.
